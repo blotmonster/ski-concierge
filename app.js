@@ -40,6 +40,50 @@ function travelMultiplier(distance, tolerance) {
   return 1;
 }
 
+function generateWinnerSummary(resort, inputs) {
+
+  let reasons = [];
+
+  if (inputs.ability === "expert" || inputs.ability === "advanced") {
+    if (resort.expert >= 8) {
+      reasons.push("its elite expert terrain");
+    }
+  }
+
+  if (inputs.terrain === "steeps" && resort.expert >= 8) {
+    reasons.push("steep, challenging lines");
+  }
+
+  if (inputs.snow === "high" && resort.snow >= 8) {
+    reasons.push("consistently strong snowfall");
+  }
+
+  if (inputs.luxury === "high" && resort.luxury >= 8) {
+    reasons.push("premium lodging and amenities");
+  }
+
+  if (inputs.crowdTolerance === "low" && resort.crowd <= 4) {
+    reasons.push("relatively low crowd levels");
+  }
+
+  const distanceHours = Math.round(resort.distance / 60);
+
+  let travelLine = "";
+
+  if (inputs.travel === "local" || inputs.travel === "regional") {
+    travelLine = `within approximately ${distanceHours} hours of travel`;
+  } else {
+    travelLine = "and it aligns with your willingness to travel";
+  }
+
+  return `
+    <strong>${resort.name}</strong> stands out as your best overall match 
+    due to ${reasons.join(", ")} ${travelLine}. 
+    Based on your selections, it offers the strongest balance of terrain, 
+    experience, and accessibility for this trip.
+  `;
+}
+
 async function calculateResults() {
 
   const zip = document.getElementById("zip").value;
@@ -48,7 +92,7 @@ async function calculateResults() {
   const terrain = document.getElementById("terrain").value;
   const luxury = document.getElementById("luxury").value;
   const nightlife = document.getElementById("nightlife").value;
-  const snowImportance = document.getElementById("snow").value;
+  const snow = document.getElementById("snow").value;
   const passPref = document.getElementById("pass").value;
   const crowdTolerance = document.getElementById("crowdTolerance").value;
   const resultMode = document.getElementById("resultMode").value;
@@ -82,7 +126,7 @@ async function calculateResults() {
 
         if (luxury === "high") alignment += r.luxury;
         if (nightlife === "high") alignment += r.nightlife;
-        if (snowImportance === "high") alignment += r.snow;
+        if (snow === "high") alignment += r.snow;
 
         if (crowdTolerance === "low") alignment += (10 - r.crowd);
 
@@ -95,19 +139,31 @@ async function calculateResults() {
 
     resultsDiv.innerHTML = "";
 
+    const overallWinner = scored[0];
+
+    const winnerSummary = generateWinnerSummary(overallWinner, {
+      ability, terrain, luxury, snow, travel, crowdTolerance
+    });
+
+    resultsDiv.innerHTML += `
+      <div class="result-card" style="border:2px solid #f59e0b;">
+        <h2>🏆 Overall Winner</h2>
+        <h3 class="resort-title">${overallWinner.name} (${overallWinner.state})</h3>
+        <p>${winnerSummary}</p>
+      </div>
+    `;
+
     if (resultMode === "overall") {
 
       const top5 = scored.slice(0,5);
-      resultsDiv.innerHTML = "<h2>Your Top Matches</h2>";
+
+      resultsDiv.innerHTML += "<h2>Your Top 5 Matches</h2>";
 
       top5.forEach((r, index) => {
 
-        const distanceMiles = Math.round(r.distance);
-        const hours = Math.round(distanceMiles / 60);
+        const hours = Math.round(r.distance / 60);
 
-        let badges = `
-          <span class="badge pass">${r.pass}</span>
-        `;
+        let badges = `<span class="badge pass">${r.pass}</span>`;
 
         if (r.expert >= 8) badges += `<span class="badge expert">Expert Terrain</span>`;
         if (r.snow >= 8) badges += `<span class="badge snow">High Snow</span>`;
@@ -126,7 +182,7 @@ async function calculateResults() {
 
     } else {
 
-      resultsDiv.innerHTML = "<h2>Top 3 by State</h2>";
+      resultsDiv.innerHTML += "<h2>Top 3 by State</h2>";
 
       const grouped = {};
 

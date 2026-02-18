@@ -1,118 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
   <title>Ski Concierge</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-
   <h1>🎿 Ski Concierge</h1>
-  <p class="subtitle">We’ll match you to the right mountain.</p>
+  <p>We’ll match you to the right mountain.</p>
 
   <!-- TRAVEL MODE -->
   <div id="modeStep" class="step active">
     <h2>How are you planning to travel?</h2>
-
-    <button onclick="selectMode('drive')">🚗 Drive Trip</button>
-    <button onclick="selectMode('fly')">✈️ Fly Trip</button>
-  </div>
-
-  <!-- DRIVE STEP -->
-  <div id="driveStep" class="step">
-
-    <h2>Drive Details</h2>
-
-    <label>ZIP Code</label>
-    <input type="text" id="zipDrive" placeholder="e.g. 02108">
-
-    <label>Max Drive Time</label>
-    <select id="driveTime">
-      <option value="local">Under 2 hours</option>
-      <option value="regional">2–4 hours</option>
-      <option value="extended">4–6 hours</option>
-    </select>
-
-    <div class="nav-row">
-      <button onclick="goBack('modeStep')">Back</button>
-      <button onclick="goToSki()">Next</button>
-    </div>
-
-  </div>
-
-  <!-- FLY STEP -->
-  <div id="flyStep" class="step">
-
-    <h2>Destination Trip</h2>
-    <p>No location required. We’ll prioritize elite destination mountains.</p>
-
-    <div class="nav-row">
-      <button onclick="goBack('modeStep')">Back</button>
-      <button onclick="goToSki()">Next</button>
-    </div>
-
+    <button id="driveBtn">🚗 Drive Trip</button>
+    <button id="flyBtn">✈️ Fly Trip</button>
   </div>
 
   <!-- SKI PROFILE -->
-  <div id="skiStep" class="step">
-
+  <div id="profileStep" class="step hidden">
     <h2>Your Ski Profile</h2>
 
     <label>Ability</label>
     <select id="ability">
-      <option value="beginner">Beginner</option>
-      <option value="intermediate">Intermediate</option>
-      <option value="advanced">Advanced</option>
-      <option value="expert">Expert</option>
+      <option>Beginner</option>
+      <option>Intermediate</option>
+      <option>Expert</option>
     </select>
 
-    <label>Terrain Preference</label>
-    <select id="terrain">
-      <option value="steeps">Steeps & Expert Terrain</option>
-      <option value="groomers">Fast Groomers</option>
-      <option value="balanced">Balanced</option>
-    </select>
-
-    <label>Crowd Tolerance</label>
-    <select id="crowdTolerance">
-      <option value="low">Low — I avoid crowds</option>
-      <option value="medium">Medium</option>
-      <option value="high">High — Doesn’t matter</option>
-    </select>
-
-    <label>Luxury Importance</label>
-    <select id="luxury">
-      <option value="low">Low</option>
-      <option value="medium">Medium</option>
-      <option value="high">High</option>
-    </select>
-
-    <label>Snow Reliability Importance</label>
-    <select id="snow">
-      <option value="low">Low</option>
-      <option value="medium">Medium</option>
-      <option value="high">High</option>
-    </select>
-
-    <label>Pass Preference</label>
-    <select id="pass">
-      <option value="any">Any</option>
-      <option value="Ikon">Ikon</option>
-      <option value="Epic">Epic</option>
-      <option value="Indy">Independent</option>
-    </select>
-
-    <div class="nav-row">
-      <button onclick="goBackToTravel()">Back</button>
-      <button onclick="calculateResults()">Find My Mountain</button>
-    </div>
-
+    <button id="backBtn">Back</button>
+    <button id="submitBtn">Find My Mountain</button>
   </div>
 
-  <!-- RESULTS -->
   <div id="results"></div>
 
 </div>

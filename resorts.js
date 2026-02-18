@@ -15,6 +15,7 @@ const resorts = [
   { name:"Park City", lat:40.65, lon:-111.51, vertical:8, expert:7, groomers:8, snow:7, luxury:8, nightlife:8, tier:8 },
 
   { name:"Vail", lat:39.64, lon:-106.37, vertical:9, expert:8, groomers:9, snow:8, luxury:9, nightlife:8, tier:10 },
-  { name:"Telluride", lat:37.94, lon:-107.84, vertical:9, expert:9, groomers:6, snow:8, luxury:9, nightlife:6, tier:9 }
+  { name:"Telluride", lat:37.94, lon:-107.84, vertical:9, expert:9, groomers:6, snow:8, luxury:9, nightlife:6, tier:9 },
+  { name:"Big Sky", lat:45.28, lon:-111.40, vertical:10, expert:9, groomers:7, snow:8, luxury:7, nightlife:5, tier:9 }
 
 ];

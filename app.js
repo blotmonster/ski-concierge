@@ -64,6 +64,7 @@ async function calculateResults() {
   const snowImportance = document.getElementById("snow").value;
   const passPref = document.getElementById("pass").value;
   const crowdTolerance = document.getElementById("crowdTolerance").value;
+  const resultMode = document.getElementById("resultMode").value;
 
   const resultsDiv = document.getElementById("results");
   resultsDiv.innerHTML = "Calculating...";
@@ -105,18 +106,50 @@ async function calculateResults() {
 
     scored.sort((a,b) => b.score - a.score);
 
-    const top5 = scored.slice(0,5);
+    resultsDiv.innerHTML = "";
 
-    resultsDiv.innerHTML = "<h2>Your Top Matches</h2>";
+    if (resultMode === "overall") {
 
-    top5.forEach(r => {
-      resultsDiv.innerHTML += `
-        <div class="result-card">
-          <h3>${r.name} (${r.state})</h3>
-          <p>Match Score: ${r.score.toFixed(1)}</p>
-        </div>
-      `;
-    });
+      const top5 = scored.slice(0,5);
+
+      resultsDiv.innerHTML = "<h2>Your Top 5 Matches</h2>";
+
+      top5.forEach(r => {
+        resultsDiv.innerHTML += `
+          <div class="result-card">
+            <h3>${r.name} (${r.state})</h3>
+            <p>Match Score: ${r.score.toFixed(1)}</p>
+          </div>
+        `;
+      });
+
+    } else {
+
+      resultsDiv.innerHTML = "<h2>Top 3 by State</h2>";
+
+      const grouped = {};
+
+      scored.forEach(r => {
+        if (!grouped[r.state]) grouped[r.state] = [];
+        grouped[r.state].push(r);
+      });
+
+      Object.keys(grouped).forEach(state => {
+
+        const top3 = grouped[state].slice(0,3);
+
+        resultsDiv.innerHTML += `<h3>${state}</h3>`;
+
+        top3.forEach(r => {
+          resultsDiv.innerHTML += `
+            <div class="result-card">
+              <h4>${r.name}</h4>
+              <p>Match Score: ${r.score.toFixed(1)}</p>
+            </div>
+          `;
+        });
+      });
+    }
 
   } catch (err) {
     resultsDiv.innerHTML = "<p>Please enter a valid ZIP.</p>";

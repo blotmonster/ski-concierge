@@ -34,22 +34,9 @@ async function getUserCoords(zip) {
 }
 
 function travelMultiplier(distance, tolerance) {
-
-  if (tolerance === "local") {
-    if (distance < 150) return 1;
-    return 0;
-  }
-
-  if (tolerance === "regional") {
-    if (distance < 350) return 1;
-    return 0;
-  }
-
-  if (tolerance === "extended") {
-    if (distance < 800) return 1;
-    return 0.5;
-  }
-
+  if (tolerance === "local") return distance < 150 ? 1 : 0;
+  if (tolerance === "regional") return distance < 350 ? 1 : 0;
+  if (tolerance === "extended") return distance < 800 ? 1 : 0.5;
   return 1;
 }
 
@@ -101,7 +88,7 @@ async function calculateResults() {
 
         const finalScore = (quality + alignment) * travelMult;
 
-        return { ...r, score: finalScore };
+        return { ...r, score: finalScore, distance };
       });
 
     scored.sort((a,b) => b.score - a.score);
@@ -111,13 +98,27 @@ async function calculateResults() {
     if (resultMode === "overall") {
 
       const top5 = scored.slice(0,5);
+      resultsDiv.innerHTML = "<h2>Your Top Matches</h2>";
 
-      resultsDiv.innerHTML = "<h2>Your Top 5 Matches</h2>";
+      top5.forEach((r, index) => {
 
-      top5.forEach(r => {
+        const distanceMiles = Math.round(r.distance);
+        const hours = Math.round(distanceMiles / 60);
+
+        let badges = `
+          <span class="badge pass">${r.pass}</span>
+        `;
+
+        if (r.expert >= 8) badges += `<span class="badge expert">Expert Terrain</span>`;
+        if (r.snow >= 8) badges += `<span class="badge snow">High Snow</span>`;
+        if (r.crowd <= 4) badges += `<span class="badge lowcrowd">Low Crowds</span>`;
+
         resultsDiv.innerHTML += `
           <div class="result-card">
-            <h3>${r.name} (${r.state})</h3>
+            <div class="rank-badge">#${index + 1}</div>
+            <h3 class="resort-title">${r.name}</h3>
+            <div class="meta">${r.state} • ~${hours} hr travel</div>
+            <div class="badges">${badges}</div>
             <p>Match Score: ${r.score.toFixed(1)}</p>
           </div>
         `;
@@ -136,14 +137,14 @@ async function calculateResults() {
 
       Object.keys(grouped).forEach(state => {
 
-        const top3 = grouped[state].slice(0,3);
+        resultsDiv.innerHTML += `<h3 style="margin-top:30px;">${state}</h3>`;
 
-        resultsDiv.innerHTML += `<h3>${state}</h3>`;
+        grouped[state].slice(0,3).forEach((r,index) => {
 
-        top3.forEach(r => {
           resultsDiv.innerHTML += `
             <div class="result-card">
-              <h4>${r.name}</h4>
+              <div class="rank-badge">#${index + 1}</div>
+              <h3 class="resort-title">${r.name}</h3>
               <p>Match Score: ${r.score.toFixed(1)}</p>
             </div>
           `;

@@ -11,38 +11,55 @@
 <div class="container">
 
   <h1>🎿 Ski Concierge</h1>
-  <p>Answer a few questions and we’ll match you intelligently.</p>
+  <p>We’ll match you to the right mountain.</p>
 
-  <!-- STEP 1 -->
-  <div id="step1" class="step">
-    <h2>Step 1 — Travel</h2>
+  <!-- TRAVEL MODE -->
+  <div id="modeSelect" class="step">
+    <h2>How are you planning to travel?</h2>
+
+    <button onclick="selectMode('drive')">🚗 Drive Trip</button>
+    <button onclick="selectMode('fly')">✈️ Fly Trip</button>
+  </div>
+
+  <!-- DRIVE STEP -->
+  <div id="driveStep" class="step hidden">
+    <h2>Drive Trip Details</h2>
 
     <label>ZIP Code</label>
-    <input type="text" id="zip" required />
+    <input type="text" id="zipDrive" />
 
-    <label>Travel Tolerance</label>
-    <select id="travel">
+    <label>Max Drive Time</label>
+    <select id="driveTime">
       <option value="local">Under 2 hours</option>
       <option value="regional">2–4 hours</option>
       <option value="extended">4–6 hours</option>
-      <option value="fly">Will Fly</option>
     </select>
 
-    <label>Trip Type</label>
-    <select id="tripType">
-      <option value="weekend">Weekend Drive</option>
-      <option value="long">Long Weekend</option>
-      <option value="destination">Destination Trip</option>
-    </select>
-
-    <button onclick="nextStep(2)">Next</button>
+    <button onclick="nextToSki()">Next</button>
   </div>
 
-  <!-- STEP 2 -->
-  <div id="step2" class="step hidden">
-    <h2>Step 2 — Ski DNA</h2>
+  <!-- FLY STEP -->
+  <div id="flyStep" class="step hidden">
+    <h2>Fly Trip Details</h2>
 
-    <label>Ability Level</label>
+    <label>Home ZIP Code</label>
+    <input type="text" id="zipFly" />
+
+    <label>Trip Length</label>
+    <select id="tripLength">
+      <option value="short">3–4 nights</option>
+      <option value="medium">5–7 nights</option>
+      <option value="long">7+ nights</option>
+    </select>
+
+    <button onclick="nextToSki()">Next</button>
+  </div>
+
+  <!-- SKI DNA -->
+  <div id="skiStep" class="step hidden">
+    <h2>Your Ski Profile</h2>
+
+    <label>Ability</label>
     <select id="ability">
       <option value="beginner">Beginner</option>
       <option value="intermediate">Intermediate</option>
@@ -52,35 +69,20 @@
 
     <label>Terrain Preference</label>
     <select id="terrain">
-      <option value="steeps">Steeps & Expert Terrain</option>
-      <option value="groomers">Groomers & Carving</option>
-      <option value="balanced">Balanced Mix</option>
+      <option value="steeps">Steeps</option>
+      <option value="groomers">Groomers</option>
+      <option value="balanced">Balanced</option>
     </select>
 
     <label>Crowd Tolerance</label>
     <select id="crowdTolerance">
-      <option value="low">Hate Crowds</option>
-      <option value="medium">Moderate</option>
-      <option value="high">Don't Care</option>
-    </select>
-
-    <button onclick="prevStep(1)">Back</button>
-    <button onclick="nextStep(3)">Next</button>
-  </div>
-
-  <!-- STEP 3 -->
-  <div id="step3" class="step hidden">
-    <h2>Step 3 — Experience</h2>
-
-    <label>Luxury Importance</label>
-    <select id="luxury">
       <option value="low">Low</option>
       <option value="medium">Medium</option>
       <option value="high">High</option>
     </select>
 
-    <label>Nightlife Importance</label>
-    <select id="nightlife">
+    <label>Luxury Importance</label>
+    <select id="luxury">
       <option value="low">Low</option>
       <option value="medium">Medium</option>
       <option value="high">High</option>
@@ -104,11 +106,10 @@
     <label>Result Mode</label>
     <select id="resultMode">
       <option value="overall">Top 5 Overall</option>
-      <option value="byState">Top 3 in Each State</option>
+      <option value="byState">Top 3 by State</option>
     </select>
 
-    <button onclick="prevStep(2)">Back</button>
-    <button onclick="calculateResults()">Find My Mountains</button>
+    <button onclick="calculateResults()">Find My Mountain</button>
   </div>
 
   <div id="results"></div>

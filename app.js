@@ -25,21 +25,28 @@ async function getUserCoords(zip) {
   };
 }
 
-function travelScore(distance, tolerance) {
+/* KEY CHANGE: Travel Multiplier */
+function travelMultiplier(distance, tolerance) {
 
   if (tolerance === "local") {
-    return Math.max(0, 10 - (distance / 20));
+    if (distance < 150) return 1;
+    if (distance < 300) return 0.4;
+    return 0;   // kills western mountains
   }
 
   if (tolerance === "regional") {
-    return Math.max(0, 10 - (distance / 50));
+    if (distance < 350) return 1;
+    if (distance < 700) return 0.5;
+    return 0;
   }
 
   if (tolerance === "extended") {
-    return Math.max(0, 10 - (distance / 120));
+    if (distance < 800) return 1;
+    if (distance < 1500) return 0.6;
+    return 0.3;
   }
 
-  return 8;
+  return 1; // will fly = no penalty
 }
 
 document.getElementById("quizForm").addEventListener("submit", async function(e){
@@ -63,7 +70,7 @@ document.getElementById("quizForm").addEventListener("submit", async function(e)
     const scored = resorts.map(r => {
 
       const distance = haversine(user.lat, user.lon, r.lat, r.lon);
-      const travelVal = travelScore(distance, travel);
+      const travelMult = travelMultiplier(distance, travel);
 
       const quality = (r.vertical + r.tier) * 1.2;
 
@@ -88,10 +95,9 @@ document.getElementById("quizForm").addEventListener("submit", async function(e)
       if (snowImportance === "high") alignment += r.snow * 1.5;
       if (snowImportance === "medium") alignment += r.snow * 0.8;
 
-      const finalScore =
-        (quality * 0.4) +
-        (alignment * 0.35) +
-        (travelVal * 0.25);
+      const baseScore = quality + alignment;
+
+      const finalScore = baseScore * travelMult;
 
       return { ...r, score: finalScore };
     });
@@ -121,7 +127,7 @@ document.getElementById("quizForm").addEventListener("submit", async function(e)
         reasons.push("Excellent snow reliability matches your priorities.");
       }
 
-      reasons.push("Distance aligns with your travel tolerance.");
+      reasons.push("Distance fits your travel tolerance.");
 
       resultsDiv.innerHTML += `
         <div class="result-card">

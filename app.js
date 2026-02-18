@@ -14,21 +14,38 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// TEMP: Boston coords (replace later with ZIP lookup)
-function getUserCoords() {
-  return { lat:42.36, lon:-71.06 };
+async function getUserCoords(zip) {
+  const response = await fetch(`https://api.zippopotam.us/us/${zip}`);
+  if (!response.ok) throw new Error("Invalid ZIP code");
+  const data = await response.json();
+
+  return {
+    lat: parseFloat(data.places[0].latitude),
+    lon: parseFloat(data.places[0].longitude)
+  };
 }
 
 function travelScore(distance, tolerance) {
-  if (tolerance === "local") return distance < 150 ? 10 : 0;
-  if (tolerance === "regional") return distance < 350 ? 10 : 4;
-  if (tolerance === "extended") return distance < 800 ? 10 : 6;
-  return 8; // fly
+
+  if (tolerance === "local") {
+    return Math.max(0, 10 - (distance / 20));
+  }
+
+  if (tolerance === "regional") {
+    return Math.max(0, 10 - (distance / 50));
+  }
+
+  if (tolerance === "extended") {
+    return Math.max(0, 10 - (distance / 120));
+  }
+
+  return 8;
 }
 
-document.getElementById("quizForm").addEventListener("submit", function(e){
+document.getElementById("quizForm").addEventListener("submit", async function(e){
   e.preventDefault();
 
+  const zip = document.getElementById("zip").value;
   const travel = document.getElementById("travel").value;
   const ability = document.getElementById("ability").value;
   const terrain = document.getElementById("terrain").value;
@@ -36,51 +53,89 @@ document.getElementById("quizForm").addEventListener("submit", function(e){
   const nightlife = document.getElementById("nightlife").value;
   const snowImportance = document.getElementById("snow").value;
 
-  const user = getUserCoords();
-
-  const scored = resorts.map(r => {
-
-    const distance = haversine(user.lat, user.lon, r.lat, r.lon);
-    const travelVal = travelScore(distance, travel);
-
-    let quality = r.vertical + r.tier;
-
-    let alignment = 0;
-
-    if (ability === "advanced" || ability === "expert") {
-      alignment += r.expert;
-    } else {
-      alignment += r.groomers;
-    }
-
-    if (terrain === "steeps") alignment += r.expert;
-    if (terrain === "groomers") alignment += r.groomers;
-
-    if (luxury === "high") alignment += r.luxury;
-    if (nightlife === "high") alignment += r.nightlife;
-    if (snowImportance === "high") alignment += r.snow;
-
-    const finalScore =
-      (quality * 0.4) +
-      (alignment * 0.35) +
-      (travelVal * 0.25);
-
-    return { ...r, score: finalScore.toFixed(1) };
-  });
-
-  scored.sort((a,b) => b.score - a.score);
-  const top5 = scored.slice(0,5);
-
   const resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = "<h2>Your Top Matches</h2>";
+  resultsDiv.innerHTML = "Calculating...";
 
-  top5.forEach(r => {
-    resultsDiv.innerHTML += `
-      <div class="result-card">
-        <h3>${r.name}</h3>
-        <p>Match Score: ${r.score}</p>
-      </div>
-    `;
-  });
+  try {
+
+    const user = await getUserCoords(zip);
+
+    const scored = resorts.map(r => {
+
+      const distance = haversine(user.lat, user.lon, r.lat, r.lon);
+      const travelVal = travelScore(distance, travel);
+
+      const quality = (r.vertical + r.tier) * 1.2;
+
+      let alignment = 0;
+
+      if (ability === "advanced" || ability === "expert") {
+        alignment += r.expert * 1.5;
+      } else {
+        alignment += r.groomers * 1.2;
+      }
+
+      if (terrain === "steeps") alignment += r.expert * 1.5;
+      if (terrain === "groomers") alignment += r.groomers * 1.5;
+      if (terrain === "balanced") alignment += (r.expert + r.groomers) * 0.7;
+
+      if (luxury === "high") alignment += r.luxury * 1.5;
+      if (luxury === "medium") alignment += r.luxury * 0.8;
+
+      if (nightlife === "high") alignment += r.nightlife * 1.5;
+      if (nightlife === "medium") alignment += r.nightlife * 0.8;
+
+      if (snowImportance === "high") alignment += r.snow * 1.5;
+      if (snowImportance === "medium") alignment += r.snow * 0.8;
+
+      const finalScore =
+        (quality * 0.4) +
+        (alignment * 0.35) +
+        (travelVal * 0.25);
+
+      return { ...r, score: finalScore };
+    });
+
+    scored.sort((a,b) => b.score - a.score);
+    const top5 = scored.slice(0,5);
+
+    resultsDiv.innerHTML = "<h2>Your Top Matches</h2>";
+
+    top5.forEach(r => {
+
+      let reasons = [];
+
+      if (r.expert >= 8 && (ability === "advanced" || ability === "expert")) {
+        reasons.push("Strong expert terrain aligns with your ability.");
+      }
+
+      if (luxury === "high" && r.luxury >= 8) {
+        reasons.push("High-end lodging matches your luxury preference.");
+      }
+
+      if (nightlife === "high" && r.nightlife >= 7) {
+        reasons.push("Active nightlife scene fits your preferences.");
+      }
+
+      if (snowImportance === "high" && r.snow >= 8) {
+        reasons.push("Excellent snow reliability matches your priorities.");
+      }
+
+      reasons.push("Distance aligns with your travel tolerance.");
+
+      resultsDiv.innerHTML += `
+        <div class="result-card">
+          <h3>${r.name}</h3>
+          <p>Match Score: ${r.score.toFixed(1)}</p>
+          <ul>
+            ${reasons.map(reason => `<li>${reason}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+    });
+
+  } catch (err) {
+    resultsDiv.innerHTML = "<p>Please enter a valid US ZIP code.</p>";
+  }
 
 });

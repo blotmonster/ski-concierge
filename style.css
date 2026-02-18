@@ -7,32 +7,31 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: auto;
 }
 
 h1 {
-  font-size: 36px;
-  margin-bottom: 5px;
-  letter-spacing: -1px;
+  font-size: 40px;
+  margin-bottom: 10px;
 }
 
-h2 {
+.step {
   margin-top: 30px;
-  color: #94a3b8;
+  padding: 25px;
+  background: #0f172a;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
 }
 
-label {
-  display: block;
-  margin-top: 15px;
-  font-size: 14px;
-  color: #cbd5e1;
+.hidden {
+  display: none;
 }
 
 input, select, button {
   width: 100%;
   padding: 12px;
-  margin-top: 5px;
+  margin-top: 8px;
   background: #1e293b;
   color: #f1f5f9;
   border: 1px solid #334155;
@@ -43,29 +42,40 @@ button {
   margin-top: 20px;
   background: linear-gradient(90deg, #2563eb, #06b6d4);
   border: none;
+  font-weight: bold;
   cursor: pointer;
-  font-weight: 700;
-  transition: 0.2s ease;
 }
 
-button:hover {
-  opacity: 0.9;
+.hero-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 30px;
 }
 
-.hidden {
-  display: none;
+.hero-image {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  filter: brightness(0.65);
 }
 
-.step {
-  margin-top: 30px;
-  padding: 25px;
-  background: #0f172a;
-  border-radius: 10px;
-  border: 1px solid #1e293b;
+.hero-content {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  right: 25px;
 }
 
-#results {
-  margin-top: 40px;
+.hero-content h2 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.hero-content p {
+  margin-top: 12px;
+  font-size: 16px;
+  max-width: 650px;
 }
 
 .result-card {
@@ -85,51 +95,4 @@ button:hover {
   padding: 8px 12px;
   font-weight: bold;
   border-radius: 8px;
-  font-size: 14px;
-}
-
-.resort-title {
-  font-size: 24px;
-  margin: 0;
-}
-
-.meta {
-  font-size: 14px;
-  color: #94a3b8;
-  margin-bottom: 10px;
-}
-
-.badges {
-  margin-top: 10px;
-}
-
-.badge {
-  display: inline-block;
-  padding: 6px 10px;
-  margin: 4px 4px 0 0;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #1e293b;
-  border: 1px solid #334155;
-}
-
-.pass {
-  background: #0ea5e9;
-  border: none;
-}
-
-.snow {
-  background: #3b82f6;
-  border: none;
-}
-
-.expert {
-  background: #ef4444;
-  border: none;
-}
-
-.lowcrowd {
-  background: #10b981;
-  border: none;
 }

@@ -11,10 +11,10 @@
 <div class="container">
 
   <h1>🎿 Ski Concierge</h1>
-  <p>We’ll match you to the right mountain.</p>
+  <p class="subtitle">We’ll match you to the right mountain.</p>
 
   <!-- TRAVEL MODE -->
-  <div id="modeSelect" class="step">
+  <div id="modeStep" class="step active">
     <h2>How are you planning to travel?</h2>
 
     <button onclick="selectMode('drive')">🚗 Drive Trip</button>
@@ -22,11 +22,12 @@
   </div>
 
   <!-- DRIVE STEP -->
-  <div id="driveStep" class="step hidden">
-    <h2>Drive Trip Details</h2>
+  <div id="driveStep" class="step">
+
+    <h2>Drive Details</h2>
 
     <label>ZIP Code</label>
-    <input type="text" id="zipDrive" />
+    <input type="text" id="zipDrive" placeholder="e.g. 02108">
 
     <label>Max Drive Time</label>
     <select id="driveTime">
@@ -35,28 +36,29 @@
       <option value="extended">4–6 hours</option>
     </select>
 
-    <button onclick="nextToSki()">Next</button>
+    <div class="nav-row">
+      <button onclick="goBack('modeStep')">Back</button>
+      <button onclick="goToSki()">Next</button>
+    </div>
+
   </div>
 
   <!-- FLY STEP -->
-  <div id="flyStep" class="step hidden">
-    <h2>Fly Trip Details</h2>
+  <div id="flyStep" class="step">
 
-    <label>Home ZIP Code</label>
-    <input type="text" id="zipFly" />
+    <h2>Destination Trip</h2>
+    <p>No location required. We’ll prioritize elite destination mountains.</p>
 
-    <label>Trip Length</label>
-    <select id="tripLength">
-      <option value="short">3–4 nights</option>
-      <option value="medium">5–7 nights</option>
-      <option value="long">7+ nights</option>
-    </select>
+    <div class="nav-row">
+      <button onclick="goBack('modeStep')">Back</button>
+      <button onclick="goToSki()">Next</button>
+    </div>
 
-    <button onclick="nextToSki()">Next</button>
   </div>
 
-  <!-- SKI DNA -->
-  <div id="skiStep" class="step hidden">
+  <!-- SKI PROFILE -->
+  <div id="skiStep" class="step">
+
     <h2>Your Ski Profile</h2>
 
     <label>Ability</label>
@@ -69,16 +71,16 @@
 
     <label>Terrain Preference</label>
     <select id="terrain">
-      <option value="steeps">Steeps</option>
-      <option value="groomers">Groomers</option>
+      <option value="steeps">Steeps & Expert Terrain</option>
+      <option value="groomers">Fast Groomers</option>
       <option value="balanced">Balanced</option>
     </select>
 
     <label>Crowd Tolerance</label>
     <select id="crowdTolerance">
-      <option value="low">Low</option>
+      <option value="low">Low — I avoid crowds</option>
       <option value="medium">Medium</option>
-      <option value="high">High</option>
+      <option value="high">High — Doesn’t matter</option>
     </select>
 
     <label>Luxury Importance</label>
@@ -103,15 +105,14 @@
       <option value="Indy">Independent</option>
     </select>
 
-    <label>Result Mode</label>
-    <select id="resultMode">
-      <option value="overall">Top 5 Overall</option>
-      <option value="byState">Top 3 by State</option>
-    </select>
+    <div class="nav-row">
+      <button onclick="goBackToTravel()">Back</button>
+      <button onclick="calculateResults()">Find My Mountain</button>
+    </div>
 
-    <button onclick="calculateResults()">Find My Mountain</button>
   </div>
 
+  <!-- RESULTS -->
   <div id="results"></div>
 
 </div>

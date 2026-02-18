@@ -1,6 +1,6 @@
 const resorts = [
 
-{ 
+{
   name:"Jackson Hole",
   state:"WY",
   pass:"Ikon",
@@ -17,7 +17,7 @@ const resorts = [
   hero:"https://images.unsplash.com/photo-1519681393784-d120267933ba"
 },
 
-{ 
+{
   name:"Stowe",
   state:"VT",
   pass:"Epic",
@@ -34,7 +34,7 @@ const resorts = [
   hero:"https://images.unsplash.com/photo-1544551763-46a013bb70d5"
 },
 
-{ 
+{
   name:"Alta",
   state:"UT",
   pass:"Ikon",
@@ -51,7 +51,7 @@ const resorts = [
   hero:"https://images.unsplash.com/photo-1483721310020-03333e577078"
 },
 
-{ 
+{
   name:"Vail",
   state:"CO",
   pass:"Epic",
@@ -68,7 +68,7 @@ const resorts = [
   hero:"https://images.unsplash.com/photo-1482192596544-9eb780fc7f66"
 },
 
-{ 
+{
   name:"Sugarloaf",
   state:"ME",
   pass:"Ikon",

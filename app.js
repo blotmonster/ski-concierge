@@ -1,20 +1,44 @@
+let mode = null;
+
+const modeStep = document.getElementById("modeStep");
+const profileStep = document.getElementById("profileStep");
+
+document.getElementById("driveBtn").addEventListener("click", () => {
+  mode = "drive";
+  goToProfile();
+});
+
+document.getElementById("flyBtn").addEventListener("click", () => {
+  mode = "fly";
+  goToProfile();
+});
+
+document.getElementById("backBtn").addEventListener("click", () => {
+  profileStep.classList.add("hidden");
+  modeStep.classList.remove("hidden");
+});
+
+document.getElementById("submitBtn").addEventListener("click", findMountains);
+
+function goToProfile(){
+  modeStep.classList.add("hidden");
+  profileStep.classList.remove("hidden");
+}
+
 function safe(n){ return Number(n) || 0; }
 
-function scoreResort(r, prefs){
+function scoreResort(r, ability){
 
   let score = 0;
 
-  score += safe(r.expert) * prefs.expertWeight;
-  score += safe(r.groomers) * prefs.groomerWeight;
-  score += safe(r.snow) * prefs.snowWeight;
-  score += safe(r.luxury) * prefs.luxuryWeight;
-  score += safe(r.nightlife) * prefs.nightlifeWeight;
-  score += safe(r.tier) * 2;
-
-  if(prefs.mode === "drive"){
-    let distancePenalty = Math.abs(safe(r.lat) - prefs.lat) * 3;
-    score -= distancePenalty;
+  if(ability === "Expert"){
+    score += safe(r.expert) * 3;
+  } else {
+    score += safe(r.groomers) * 3;
   }
+
+  score += safe(r.snow) * 2;
+  score += safe(r.tier) * 2;
 
   return score;
 }
@@ -22,29 +46,18 @@ function scoreResort(r, prefs){
 function findMountains(){
 
   const ability = document.getElementById("ability").value;
-  const mode = document.querySelector("input[name='mode']:checked").value;
-
-  const prefs = {
-    expertWeight: ability === "Expert" ? 3 : 1,
-    groomerWeight: ability === "Beginner" ? 3 : 1,
-    snowWeight: 2,
-    luxuryWeight: 1,
-    nightlifeWeight: 1,
-    lat: 42.36, // Boston baseline
-    mode: mode
-  };
 
   let scored = resorts.map(r => ({
     ...r,
-    matchScore: scoreResort(r, prefs)
+    matchScore: scoreResort(r, ability)
   }));
 
   scored.sort((a,b)=> b.matchScore - a.matchScore);
 
-  renderResults(scored.slice(0,5), scored);
+  renderResults(scored.slice(0,5));
 }
 
-function renderResults(top5, all){
+function renderResults(top5){
 
   const container = document.getElementById("results");
   container.innerHTML = "";
@@ -56,7 +69,7 @@ function renderResults(top5, all){
       <img src="${winner.hero}" />
       <div class="heroText">
         🏆 ${winner.name} (${winner.state})
-        <p>Best overall alignment with your terrain preferences, snow priorities, and trip profile.</p>
+        <p>Best alignment with your ski ability and terrain preferences.</p>
       </div>
     </div>
   `;
@@ -71,25 +84,4 @@ function renderResults(top5, all){
       </div>
     `;
   });
-
-  // By State
-  container.innerHTML += `<h2>Top by State</h2>`;
-
-  const byState = {};
-
-  all.forEach(r=>{
-    if(!byState[r.state] || byState[r.state].matchScore < r.matchScore){
-      byState[r.state] = r;
-    }
-  });
-
-  Object.values(byState).forEach(r=>{
-    container.innerHTML += `
-      <div class="card">
-        <strong>${r.state}: ${r.name}</strong>
-        <div>Score: ${r.matchScore.toFixed(1)}</div>
-      </div>
-    `;
-  });
-
 }

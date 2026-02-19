@@ -1,9 +1,9 @@
-document.getElementById("runBtn").addEventListener("click", function() {
+document.getElementById("runBtn").addEventListener("click", function () {
 
   const user = {
-    travel: document.getElementById("travel").value,
-    zip: document.getElementById("zip").value,
-    driveTime: parseInt(document.getElementById("driveTime").value),
+    travel: document.getElementById("travel").value,          // "drive" or "fly"
+    zip: document.getElementById("zip").value || "02482",    // default Boston
+    driveTime: document.getElementById("driveTime").value,   // "2", "3", etc.
     ability: document.getElementById("ability").value,
     terrain: document.getElementById("terrain").value,
     crowd: document.getElementById("crowd").value,

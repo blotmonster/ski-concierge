@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", function(){
+
 let mode = null;
 
 const modeStep = document.getElementById("modeStep");
@@ -85,3 +87,5 @@ function renderResults(top5){
     `;
   });
 }
+
+});

@@ -1,3 +1,4 @@
+if (user.pass.toLowerCase() !== "any") {
 // -----------------------------
 // Distance Calculation
 // -----------------------------
@@ -78,7 +79,7 @@ function calculateMatches(user) {
     // Pass Gating
     // -------------------------
 
-    if (user.pass !== "Any") {
+    if (user.pass.toLowerCase() !== "any") {
       if (resort.pass === user.pass) {
         score += 20;
       } else {

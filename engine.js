@@ -1,5 +1,5 @@
 // -----------------------------
-// Distance Helpers
+// Distance Calculation
 // -----------------------------
 
 function toRad(value) {
@@ -22,7 +22,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-
 // -----------------------------
 // Main Matching Engine
 // -----------------------------
@@ -36,14 +35,11 @@ function calculateMatches(user) {
 
   resorts.forEach(resort => {
 
-    // Normalize values
-    const travel = user.travel ? user.travel.toLowerCase() : "";
-    const pass = user.pass ? user.pass.toLowerCase() : "any";
-
     // -------------------------
     // DRIVE HARD GATING
     // -------------------------
-    if (travel === "drive") {
+
+    if (user.travel.toLowerCase() === "drive") {
 
       const distance = calculateDistance(
         bostonLat,
@@ -52,85 +48,95 @@ function calculateMatches(user) {
         resort.lon
       );
 
-      // 250 miles ≈ ~4 hours
-      if (distance > 250) {
-        return; // remove completely
-      }
-    }
+      // Convert drive time selection to miles
+      const driveMap = {
+        "2": 120,
+        "3": 180,
+        "4": 240,
+        "5": 300,
+        "6": 360
+      };
 
-    // -------------------------
-    // PASS HARD GATING
-    // -------------------------
-    if (pass !== "any") {
-      if (!resort.pass || resort.pass.toLowerCase() !== pass) {
-        return; // remove completely
+      const maxMiles = driveMap[user.driveTime];
+
+      if (distance > maxMiles) {
+        return; // completely remove resort
       }
     }
 
     let score = 0;
 
     // -------------------------
-    // Ability Weighting
+    // Ability Scoring
     // -------------------------
 
     if (user.ability === "Beginner" && resort.terrain === "beginner") {
-      score += 30;
+      score += 25;
     }
 
     if (user.ability === "Intermediate" && resort.terrain === "mixed") {
-      score += 30;
+      score += 25;
     }
 
     if (
       (user.ability === "Advanced" || user.ability === "Expert") &&
       (resort.terrain === "advanced" || resort.terrain === "expert")
     ) {
-      score += 35;
+      score += 30;
+    }
+
+    // -------------------------
+    // Pass Gating
+    // -------------------------
+
+    if (user.pass.toLowerCase() !== "any") {
+      if (resort.pass !== user.pass) {
+        return; // hard remove if wrong pass
+      }
+      score += 20;
     }
 
     // -------------------------
     // Snow Reliability
     // -------------------------
 
-    if (resort.snow) {
+    if (user.snow === "High") {
+      score += resort.snow * 3;
+    } else if (user.snow === "Medium") {
       score += resort.snow * 2;
+    } else {
+      score += resort.snow;
     }
 
     // -------------------------
     // Crowd Preference
     // -------------------------
 
-    if (user.crowd === "Low – Avoid Crowds" && resort.crowd) {
+    if (user.crowd === "Low – Avoid Crowds") {
       score += (10 - resort.crowd) * 2;
-    }
-
-    if (user.crowd === "Medium") {
+    } else if (user.crowd === "High – Don’t Care") {
+      score += resort.crowd;
+    } else {
       score += 5;
     }
 
-    if (user.crowd === "High – Don’t Care" && resort.crowd) {
-      score += resort.crowd;
-    }
-
     // -------------------------
-    // Luxury Weighting
+    // Luxury
     // -------------------------
 
-    if (user.luxury === "Medium" && resort.luxury) {
+    if (user.luxury === "High") {
+      score += resort.luxury * 2;
+    } else if (user.luxury === "Medium") {
       score += resort.luxury;
     }
 
-    if (user.luxury === "High" && resort.luxury) {
-      score += resort.luxury * 2;
-    }
-
     // -------------------------
-    // Fly Bonus (destination bias)
+    // Fly Bonus
     // -------------------------
 
-    if (travel === "fly") {
-      if (resort.snow) score += resort.snow * 1.5;
-      if (resort.luxury) score += resort.luxury;
+    if (user.travel.toLowerCase() === "fly") {
+      score += resort.snow * 1.5;
+      score += resort.luxury;
     }
 
     results.push({
@@ -141,6 +147,5 @@ function calculateMatches(user) {
 
   });
 
-  // Sort highest score first
   return results.sort((a, b) => b.score - a.score);
 }

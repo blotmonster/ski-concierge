@@ -6,51 +6,43 @@ body {
 }
 
 .container {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 40px auto;
   padding: 20px;
 }
 
-h1 {
-  margin-bottom: 0;
-}
-
 button {
-  width: 100%;
   padding: 14px;
-  margin-top: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
-  font-size: 16px;
-  font-weight: 600;
   cursor: pointer;
+  font-weight: 600;
   background: linear-gradient(90deg,#2563eb,#06b6d4);
   color: white;
+  margin-top: 12px;
 }
 
-select, input {
+select {
   width: 100%;
   padding: 12px;
-  margin-top: 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
-  font-size: 14px;
+  margin-top: 8px;
 }
 
 .card {
   background: #1e293b;
-  padding: 16px;
+  padding: 18px;
+  border-radius: 12px;
   margin-top: 12px;
-  border-radius: 10px;
 }
 
 .hero {
   margin-top: 30px;
-  padding: 30px;
-  border-radius: 16px;
+  padding: 40px;
+  border-radius: 18px;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   position: relative;
 }
 
@@ -58,8 +50,8 @@ select, input {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  border-radius: 16px;
+  background: rgba(0,0,0,0.55);
+  border-radius: 18px;
 }
 
 .hero-content {
@@ -67,6 +59,8 @@ select, input {
   z-index: 2;
 }
 
-.start-over {
-  margin-top: 30px;
+.toggle {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
 }

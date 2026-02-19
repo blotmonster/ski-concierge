@@ -1,4 +1,3 @@
-if (user.pass.toLowerCase() !== "any") {
 // -----------------------------
 // Distance Calculation
 // -----------------------------
@@ -48,9 +47,8 @@ function calculateMatches(user) {
         resort.lon
       );
 
-      // 250 miles ≈ ~4 hours
       if (distance > 250) {
-        return; // completely remove from consideration
+        return; // hard remove
       }
     }
 
@@ -83,7 +81,7 @@ function calculateMatches(user) {
       if (resort.pass === user.pass) {
         score += 20;
       } else {
-        return; // hard remove if wrong pass
+        return; // hard remove wrong pass
       }
     }
 

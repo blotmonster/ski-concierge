@@ -22,7 +22,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-
 // -----------------------------
 // Main Matching Engine
 // -----------------------------
@@ -39,7 +38,7 @@ function calculateMatches(user) {
     // -------------------------
     // DRIVE HARD GATING
     // -------------------------
-    if (user.travelType === "Drive") {
+    if (user.travel === "Drive") {
 
       const distance = calculateDistance(
         bostonLat,
@@ -48,48 +47,55 @@ function calculateMatches(user) {
         resort.lon
       );
 
-      // Exclude resorts beyond ~4 hour drive (~250 miles)
+      // 250 miles ≈ ~4 hours
       if (distance > 250) {
         return; // completely remove from consideration
       }
-
     }
-
-    // -------------------------
-    // SCORING
-    // -------------------------
 
     let score = 0;
 
-    // Ability weighting
+    // -------------------------
+    // Ability Scoring
+    // -------------------------
+
     if (user.ability === "Beginner" && resort.terrain === "beginner") {
-      score += 20;
+      score += 25;
     }
 
     if (user.ability === "Intermediate" && resort.terrain === "mixed") {
-      score += 20;
+      score += 25;
     }
 
     if (
       (user.ability === "Advanced" || user.ability === "Expert") &&
       (resort.terrain === "advanced" || resort.terrain === "expert")
     ) {
-      score += 25;
+      score += 30;
     }
 
-    // Pass match
+    // -------------------------
+    // Pass Gating
+    // -------------------------
+
     if (user.pass !== "Any") {
       if (resort.pass === user.pass) {
         score += 20;
       } else {
-        score -= 100; // strong penalty
+        return; // hard remove if wrong pass
       }
     }
 
-    // Snow reliability
+    // -------------------------
+    // Snow Reliability
+    // -------------------------
+
     score += resort.snow * 2;
 
-    // Crowd preference
+    // -------------------------
+    // Crowd Preference
+    // -------------------------
+
     if (user.crowd === "Low – Avoid Crowds") {
       score += (10 - resort.crowd) * 2;
     }
@@ -102,7 +108,10 @@ function calculateMatches(user) {
       score += resort.crowd;
     }
 
-    // Luxury preference
+    // -------------------------
+    // Luxury
+    // -------------------------
+
     if (user.luxury === "Medium") {
       score += resort.luxury;
     }
@@ -111,8 +120,11 @@ function calculateMatches(user) {
       score += resort.luxury * 2;
     }
 
-    // Travel type bonus
-    if (user.travelType === "Fly") {
+    // -------------------------
+    // Fly Bonus
+    // -------------------------
+
+    if (user.travel === "Fly") {
       score += resort.snow * 1.5;
       score += resort.luxury;
     }
@@ -125,6 +137,5 @@ function calculateMatches(user) {
 
   });
 
-  // Sort descending
   return results.sort((a, b) => b.score - a.score);
 }

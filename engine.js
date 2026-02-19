@@ -1,6 +1,6 @@
-// =============================================
-// Utility Functions
-// =============================================
+// -----------------------------
+// Distance Utilities
+// -----------------------------
 
 function toRad(value) {
   return value * Math.PI / 180;
@@ -22,116 +22,151 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// =============================================
-// ZIP to Lat/Lon (Temporary – Boston Default)
-// =============================================
+// -----------------------------
+// ZIP → Lat/Lon (Temp: Boston Default)
+// -----------------------------
 
-function getLatLonFromZip(zip) {
-  // For now, hardcoded Boston area
+function getZipLatLon(zip) {
+  // For now we assume Boston area.
+  // Later we’ll add real geocoding.
   return {
     lat: 42.3601,
     lon: -71.0589
   };
 }
 
-// =============================================
-// Main Matching Engine
-// =============================================
+// -----------------------------
+// Convert Drive Time to Miles
+// -----------------------------
+
+function getMaxMiles(maxDrive) {
+  if (!maxDrive) return 250;
+
+  const value = maxDrive.toLowerCase();
+
+  if (value.includes("2")) return 120;
+  if (value.includes("3")) return 180;
+  if (value.includes("4")) return 240;
+  if (value.includes("5")) return 300;
+  if (value.includes("6")) return 360;
+
+  return 250;
+}
+
+// -----------------------------
+// MAIN MATCH ENGINE
+// -----------------------------
 
 function calculateMatches(user) {
 
-  if (!window.resorts || resorts.length === 0) {
-    console.error("Resort dataset not loaded.");
-    return [];
-  }
+  const travel = (user.travel || "").toLowerCase();
+  const ability = user.ability;
+  const pass = (user.pass || "").toLowerCase();
+  const crowd = user.crowd;
+  const luxury = user.luxury;
+  const snowImportance = user.snowImportance;
+
+  const { lat, lon } = getZipLatLon(user.zip);
+  const maxMiles = getMaxMiles(user.maxDrive);
 
   let results = [];
 
-  let origin = getLatLonFromZip(user.zip);
-
   resorts.forEach(resort => {
 
-    let score = 0;
+    // -------------------------
+    // HARD DRIVE GATING
+    // -------------------------
 
-    // =========================================
-    // DRIVE HARD FILTER
-    // =========================================
-
-    if (user.travel === "drive") {
+    if (travel === "drive") {
 
       const distance = calculateDistance(
-        origin.lat,
-        origin.lon,
+        lat,
+        lon,
         resort.lat,
         resort.lon
       );
 
-      const driveHours = distance / 50; // assume 50mph avg
-
-      if (driveHours > user.maxDrive) {
-        return; // remove resort
+      if (distance > maxMiles) {
+        return; // completely remove resort
       }
     }
 
-    // =========================================
-    // ABILITY
-    // =========================================
+    // -------------------------
+    // PASS HARD GATING
+    // -------------------------
 
-    if (user.ability === "Beginner" && resort.terrain === "beginner") score += 25;
-    if (user.ability === "Intermediate" && resort.terrain === "mixed") score += 25;
-    if (
-      (user.ability === "Advanced" || user.ability === "Expert") &&
-      (resort.terrain === "advanced" || resort.terrain === "expert")
-    ) score += 30;
-
-    // =========================================
-    // PASS FILTER
-    // =========================================
-
-    if (user.pass !== "Any") {
-      if (resort.pass !== user.pass) {
+    if (pass !== "any") {
+      if (!resort.pass || resort.pass.toLowerCase() !== pass) {
         return;
-      } else {
-        score += 20;
       }
     }
 
-    // =========================================
-    // SNOW
-    // =========================================
+    let score = 0;
 
-    score += resort.snow * 2;
+    // -------------------------
+    // Ability
+    // -------------------------
 
-    // =========================================
-    // CROWD
-    // =========================================
+    if (ability === "Beginner" && resort.terrain === "beginner") {
+      score += 30;
+    }
 
-    if (user.crowd === "Low – Avoid Crowds") {
+    if (ability === "Intermediate" && resort.terrain === "mixed") {
+      score += 30;
+    }
+
+    if (
+      (ability === "Advanced" || ability === "Expert") &&
+      (resort.terrain === "advanced" || resort.terrain === "expert")
+    ) {
+      score += 40;
+    }
+
+    // -------------------------
+    // Snow Reliability
+    // -------------------------
+
+    if (snowImportance === "High") {
+      score += resort.snow * 3;
+    } else {
+      score += resort.snow * 2;
+    }
+
+    // -------------------------
+    // Crowd
+    // -------------------------
+
+    if (crowd === "Low – Avoid Crowds") {
       score += (10 - resort.crowd) * 2;
     }
 
-    if (user.crowd === "Medium") {
+    if (crowd === "Medium") {
       score += 5;
     }
 
-    if (user.crowd === "High – Don’t Care") {
+    if (crowd === "High – Don’t Care") {
       score += resort.crowd;
     }
 
-    // =========================================
-    // LUXURY
-    // =========================================
+    // -------------------------
+    // Luxury
+    // -------------------------
 
-    if (user.luxury === "Medium") score += resort.luxury;
-    if (user.luxury === "High") score += resort.luxury * 2;
-
-    // =========================================
-    // FLY BONUS
-    // =========================================
-
-    if (user.travel === "fly") {
-      score += resort.snow * 1.5;
+    if (luxury === "Medium") {
       score += resort.luxury;
+    }
+
+    if (luxury === "High") {
+      score += resort.luxury * 2;
+    }
+
+    // -------------------------
+    // Fly Bias
+    // -------------------------
+
+    if (travel === "fly") {
+      score += resort.vertical ? resort.vertical / 100 : 0;
+      score += resort.snow * 2;
     }
 
     results.push({

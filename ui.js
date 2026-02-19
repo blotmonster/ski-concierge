@@ -1,88 +1,95 @@
-// =====================================================
-// ZIP CODE → LAT/LON LOOKUP (Basic for Now)
-// =====================================================
+// =============================================
+// Collect User Inputs
+// =============================================
 
-function getLatLonFromZip(zip) {
+function getUserInputs() {
 
-  // For now we hardcode common Northeast ZIPs
-  if (zip === "02482") {
-    return { lat: 42.3601, lon: -71.0589 }; // Boston / Wellesley
-  }
-
-  // Default fallback
-  return { lat: 42.3601, lon: -71.0589 };
-}
-
-// =====================================================
-// MAIN RUN FUNCTION
-// =====================================================
-
-function runMatch() {
-
-  const travel = document.getElementById("travel").value;
+  const travel = document.getElementById("travel").value.toLowerCase();
   const ability = document.getElementById("ability").value;
   const terrain = document.getElementById("terrain").value;
   const crowd = document.getElementById("crowd").value;
   const luxury = document.getElementById("luxury").value;
-  const snowImportance = document.getElementById("snow").value;
+  const snow = document.getElementById("snow").value;
   const pass = document.getElementById("pass").value;
 
-  const zip = document.getElementById("zip").value;
-  const maxDrive = document.getElementById("maxDrive").value;
+  const zipInput = document.getElementById("zip");
+  const maxDriveInput = document.getElementById("maxDrive");
 
-  let originLat = null;
-  let originLon = null;
+  let zip = zipInput ? zipInput.value : "";
+  let maxDrive = maxDriveInput ? parseInt(maxDriveInput.value) : 6;
 
-  if (travel.toLowerCase() === "drive") {
-    const coords = getLatLonFromZip(zip);
-    originLat = coords.lat;
-    originLon = coords.lon;
-  }
-
-  const user = {
+  return {
     travel,
     ability,
     terrain,
     crowd,
     luxury,
-    snowImportance,
+    snow,
     pass,
-    maxDrive,
-    originLat,
-    originLon
+    zip,
+    maxDrive
   };
-
-  const results = calculateMatches(user);
-
-  renderResults(results);
 }
 
-// =====================================================
-// RENDER RESULTS
-// =====================================================
+// =============================================
+// Render Results
+// =============================================
 
 function renderResults(results) {
 
   const container = document.getElementById("results");
-  container.innerHTML = "";
 
-  if (!results.length) {
+  if (!container) {
+    console.error("Results container missing.");
+    return;
+  }
+
+  if (results.length === 0) {
     container.innerHTML = "<p>No resorts match your criteria.</p>";
     return;
   }
 
-  const top5 = results.slice(0, 5);
+  let html = "<h2>Your Top 5</h2>";
 
-  top5.forEach((resort, index) => {
-
-    const div = document.createElement("div");
-    div.className = "result";
-
-    div.innerHTML = `
-      <h3>#${index + 1} ${resort.name} (${resort.state})</h3>
-      <p>Match Score: ${resort.score}</p>
+  results.slice(0, 5).forEach((r, i) => {
+    html += `
+      <div>
+        <strong>#${i + 1} ${r.name}</strong><br>
+        Match Score: ${r.score.toFixed(1)}
+      </div>
+      <br>
     `;
-
-    container.appendChild(div);
   });
+
+  container.innerHTML = html;
 }
+
+// =============================================
+// Run Match
+// =============================================
+
+function runMatch() {
+  const user = getUserInputs();
+  const results = calculateMatches(user);
+  renderResults(results);
+}
+
+// =============================================
+// Button Wiring
+// =============================================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const button = document.getElementById("findBtn");
+
+  if (!button) {
+    console.error("Find button not found.");
+    return;
+  }
+
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    runMatch();
+  });
+
+});

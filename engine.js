@@ -1,75 +1,28 @@
 function calculateMatches(profile) {
 
-  return resorts
-    .filter(r => {
-      // PASS GATING
-      if (profile.pass !== "any") {
-        if (!r.pass || r.pass.toLowerCase() !== profile.pass) return false;
-      }
+  return window.resorts.map(r => {
 
-      return true;
-    })
-    .map(r => {
+    let score = 0;
 
-      let score = 0;
+    if (profile.pass !== "Any" && profile.pass !== r.pass) {
+      score -= 100;
+    }
 
-      // Ability Weight
-      if (profile.ability === "beginner") {
-        score += r.groomers * 2;
-      }
-      if (profile.ability === "intermediate") {
-        score += r.groomers * 1.5 + r.vertical;
-      }
-      if (profile.ability === "advanced") {
-        score += r.vertical * 1.5 + r.expert;
-      }
-      if (profile.ability === "expert") {
-        score += r.expert * 2 + r.vertical;
-      }
+    if (profile.ability === "Beginner") {
+      score += r.groomers * 2;
+    }
 
-      // Terrain Preference
-      if (profile.terrain === "groomers") {
-        score += r.groomers * 2;
-      }
-      if (profile.terrain === "mixed") {
-        score += r.vertical + r.groomers;
-      }
-      if (profile.terrain === "steeps") {
-        score += r.expert * 2;
-      }
+    if (profile.ability === "Advanced" || profile.ability === "Expert") {
+      score += r.expert * 2;
+    }
 
-      // Crowd
-      if (profile.crowd === "low") {
-        score += (10 - r.crowd) * 1.5;
-      }
-      if (profile.crowd === "medium") {
-        score += 5;
-      }
-      if (profile.crowd === "high") {
-        score += r.crowd;
-      }
+    if (profile.crowd === "Low — Avoid Crowds") {
+      score += (10 - r.crowd);
+    }
 
-      // Luxury
-      if (profile.luxury === "medium") {
-        score += r.luxury;
-      }
-      if (profile.luxury === "high") {
-        score += r.luxury * 2;
-      }
+    score += r.tier;
 
-      // Snow Reliability
-      if (profile.snow === "medium") {
-        score += r.snow;
-      }
-      if (profile.snow === "high") {
-        score += r.snow * 2;
-      }
+    return { ...r, score };
 
-      return {
-        ...r,
-        score
-      };
-
-    })
-    .sort((a,b) => b.score - a.score);
+  }).sort((a,b)=>b.score-a.score);
 }

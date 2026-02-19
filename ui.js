@@ -1,80 +1,50 @@
-const app = document.getElementById("app");
-
-let user = {
-  travel: null,
-  ability: 7,
-  pass: "Any",
-  luxuryWeight: 1
-};
-
-function renderTravel() {
-  app.innerHTML = `
-    <h2>Travel Type</h2>
-    <button onclick="selectTravel('drive')">🚗 Drive</button>
-    <button onclick="selectTravel('fly')">✈️ Fly</button>
-  `;
-}
-
-function selectTravel(type) {
-  user.travel = type;
-  renderProfile();
-}
-
-function renderProfile() {
-  app.innerHTML = `
-    <h2>Ski Profile</h2>
-
-    <label>Ability</label>
-    <select id="ability">
-      <option value="5">Beginner</option>
-      <option value="7">Intermediate</option>
-      <option value="9">Expert</option>
-    </select>
-
-    <label>Pass</label>
-    <select id="pass">
-      <option value="Any">Any</option>
-      <option value="Epic">Epic</option>
-      <option value="Ikon">Ikon</option>
-      <option value="Indy">Indy</option>
-    </select>
-
-    <button onclick="calculate()">Find My Mountains</button>
-  `;
-}
-
-function calculate() {
-  user.ability = parseInt(document.getElementById("ability").value);
-  user.pass = document.getElementById("pass").value;
-
-  let ranked = scoreResorts(user);
-
-  renderResults(ranked.slice(0,5));
-}
-
-function renderResults(results) {
-
-  const winner = results[0];
+document.addEventListener("DOMContentLoaded", () => {
+  const app = document.getElementById("app");
 
   app.innerHTML = `
-    <div class="hero" style="background-image:url('https://images.unsplash.com/photo-1519681393784-d120267933ba')">
-      <div class="hero-content">
-        <h2>🏆 ${winner.name} (${winner.state})</h2>
-        <p>Strongest overall match based on travel mode and ski DNA.</p>
-      </div>
+    <div class="card">
+      <h2>Travel Type</h2>
+      <select id="travel">
+        <option value="drive">Drive</option>
+        <option value="fly">Fly</option>
+      </select>
+
+      <h2>Ability</h2>
+      <select id="ability">
+        <option>Beginner</option>
+        <option>Intermediate</option>
+        <option>Expert</option>
+      </select>
+
+      <h2>Pass</h2>
+      <select id="pass">
+        <option>Any</option>
+        <option>Epic</option>
+        <option>Ikon</option>
+        <option>Indy</option>
+      </select>
+
+      <button id="goBtn">Find My Mountains</button>
+      <div id="results"></div>
     </div>
-
-    <h2>Your Top 5</h2>
-
-    ${results.map((r,i) => `
-      <div class="card">
-        <strong>#${i+1} ${r.name}</strong>
-        <div>Score: ${r.score.toFixed(1)}</div>
-      </div>
-    `).join("")}
-
-    <button onclick="renderTravel()">Start Over</button>
   `;
-}
 
-renderTravel();
+  document.getElementById("goBtn").addEventListener("click", () => {
+    const travel = document.getElementById("travel").value;
+    const ability = document.getElementById("ability").value;
+    const passPref = document.getElementById("pass").value;
+
+    const filtered = filterResorts(travel, passPref);
+    const ranked = rankResorts(filtered, ability).slice(0, 5);
+
+    const results = document.getElementById("results");
+    results.innerHTML = `
+      <h2>Your Top 5</h2>
+      ${ranked.map((r,i) => `
+        <div class="result">
+          #${i+1} ${r.name} (${r.state}) — ${r.score.toFixed(1)}
+        </div>
+      `).join("")}
+    `;
+  });
+});

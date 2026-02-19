@@ -1,17 +1,13 @@
-// =====================================================
-// Ski Concierge Matching Engine
-// =====================================================
-
-// -----------------------------------------------------
-// Distance Helpers (Haversine Formula)
-// -----------------------------------------------------
+// =============================================
+// Utility Functions
+// =============================================
 
 function toRad(value) {
   return value * Math.PI / 180;
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 3958.8; // Earth radius in miles
+  const R = 3958.8; // miles
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
 
@@ -26,98 +22,89 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// -----------------------------------------------------
+// =============================================
+// ZIP to Lat/Lon (Temporary – Boston Default)
+// =============================================
+
+function getLatLonFromZip(zip) {
+  // For now, hardcoded Boston area
+  return {
+    lat: 42.3601,
+    lon: -71.0589
+  };
+}
+
+// =============================================
 // Main Matching Engine
-// -----------------------------------------------------
+// =============================================
 
 function calculateMatches(user) {
 
+  if (!window.resorts || resorts.length === 0) {
+    console.error("Resort dataset not loaded.");
+    return [];
+  }
+
   let results = [];
+
+  let origin = getLatLonFromZip(user.zip);
 
   resorts.forEach(resort => {
 
     let score = 0;
 
-    const travelType = user.travel?.toLowerCase();
-    const passChoice = user.pass?.toLowerCase();
+    // =========================================
+    // DRIVE HARD FILTER
+    // =========================================
 
-    // =====================================================
-    // DRIVE HARD GATING (TIME BASED)
-    // =====================================================
-
-    if (travelType === "drive") {
+    if (user.travel === "drive") {
 
       const distance = calculateDistance(
-        user.originLat,
-        user.originLon,
+        origin.lat,
+        origin.lon,
         resort.lat,
         resort.lon
       );
 
-      // Realistic Northeast mountain driving average
-      const averageSpeed = 48; // mph
+      const driveHours = distance / 50; // assume 50mph avg
 
-      const driveTimeHours = distance / averageSpeed;
-
-      let maxHours = 10; // default
-
-      if (user.maxDrive === "2") maxHours = 2;
-      if (user.maxDrive === "3") maxHours = 3;
-      if (user.maxDrive === "4") maxHours = 4;
-      if (user.maxDrive === "5") maxHours = 5;
-      if (user.maxDrive === "6") maxHours = 6;
-
-      if (driveTimeHours > maxHours) {
-        return; // remove from consideration
+      if (driveHours > user.maxDrive) {
+        return; // remove resort
       }
     }
 
-    // =====================================================
-    // PASS HARD GATING
-    // =====================================================
+    // =========================================
+    // ABILITY
+    // =========================================
 
-    if (passChoice && passChoice !== "any") {
-      if (!resort.pass || resort.pass.toLowerCase() !== passChoice) {
-        return; // remove if pass mismatch
-      }
-    }
-
-    // =====================================================
-    // ABILITY WEIGHTING
-    // =====================================================
-
-    const ability = user.ability?.toLowerCase();
-
-    if (ability === "beginner" && resort.terrain === "beginner") {
-      score += 25;
-    }
-
-    if (ability === "intermediate" && resort.terrain === "mixed") {
-      score += 25;
-    }
-
+    if (user.ability === "Beginner" && resort.terrain === "beginner") score += 25;
+    if (user.ability === "Intermediate" && resort.terrain === "mixed") score += 25;
     if (
-      (ability === "advanced" || ability === "expert") &&
+      (user.ability === "Advanced" || user.ability === "Expert") &&
       (resort.terrain === "advanced" || resort.terrain === "expert")
-    ) {
-      score += 30;
+    ) score += 30;
+
+    // =========================================
+    // PASS FILTER
+    // =========================================
+
+    if (user.pass !== "Any") {
+      if (resort.pass !== user.pass) {
+        return;
+      } else {
+        score += 20;
+      }
     }
 
-    // =====================================================
-    // SNOW RELIABILITY
-    // =====================================================
+    // =========================================
+    // SNOW
+    // =========================================
 
-    if (user.snowImportance === "high") {
-      score += resort.snow * 3;
-    } else if (user.snowImportance === "medium") {
-      score += resort.snow * 2;
-    } else {
-      score += resort.snow;
-    }
+    score += resort.snow * 2;
 
-    // =====================================================
-    // CROWD PREFERENCE
-    // =====================================================
+    // =========================================
+    // CROWD
+    // =========================================
 
     if (user.crowd === "Low – Avoid Crowds") {
       score += (10 - resort.crowd) * 2;
@@ -131,49 +118,29 @@ function calculateMatches(user) {
       score += resort.crowd;
     }
 
-    // =====================================================
-    // LUXURY WEIGHTING
-    // =====================================================
+    // =========================================
+    // LUXURY
+    // =========================================
 
-    if (user.luxury === "High") {
-      score += resort.luxury * 2;
-    }
+    if (user.luxury === "Medium") score += resort.luxury;
+    if (user.luxury === "High") score += resort.luxury * 2;
 
-    if (user.luxury === "Medium") {
-      score += resort.luxury;
-    }
+    // =========================================
+    // FLY BONUS
+    // =========================================
 
-    // =====================================================
-    // FLY BONUS LOGIC
-    // =====================================================
-
-    if (travelType === "fly") {
-
-      // Big mountain / destination boost
+    if (user.travel === "fly") {
       score += resort.snow * 1.5;
       score += resort.luxury;
-
-      // Slight regional boost for major western states
-      const westernStates = [
-        "CO", "UT", "WY", "ID", "MT", "CA", "WA", "OR", "BC", "AB"
-      ];
-
-      if (westernStates.includes(resort.state)) {
-        score += 10;
-      }
     }
 
-    // =====================================================
-    // Push Result
-    // =====================================================
-
     results.push({
-      ...resort,
-      score: Number(score.toFixed(1))
+      name: resort.name,
+      state: resort.state,
+      score: score
     });
 
   });
 
-  // Sort descending
   return results.sort((a, b) => b.score - a.score);
 }

@@ -1,21 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Ski Concierge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
+
   <h1>🎿 Ski Concierge</h1>
-  <p>We’ll match you intelligently.</p>
-  <div id="app"></div>
+  <p class="subtitle">We’ll match you intelligently.</p>
+
+  <!-- ========================= -->
+  <!-- TRAVEL TYPE -->
+  <!-- ========================= -->
+
+  <div class="card">
+    <h2>Travel Type</h2>
+
+    <select id="travel">
+      <option value="drive">Drive</option>
+      <option value="fly">Fly</option>
+    </select>
+
+    <!-- Drive Only Section -->
+    <div id="driveOptions">
+
+      <label>ZIP Code</label>
+      <input type="text" id="zip" placeholder="e.g. 02482">
+
+      <label>Max Drive Time</label>
+      <select id="driveTime">
+        <option value="2">Under 2 hours</option>
+        <option value="3">Under 3 hours</option>
+        <option value="4">Under 4 hours</option>
+        <option value="5">Under 5 hours</option>
+        <option value="6">Under 6 hours</option>
+      </select>
+
+    </div>
+
+  </div>
+
+  <!-- ========================= -->
+  <!-- SKI PROFILE -->
+  <!-- ========================= -->
+
+  <div class="card">
+    <h2>Ski Profile</h2>
+
+    <label>Ability</label>
+    <select id="ability">
+      <option>Beginner</option>
+      <option>Intermediate</option>
+      <option>Advanced</option>
+      <option>Expert</option>
+    </select>
+
+    <label>Terrain Preference</label>
+    <select id="terrain">
+      <option>Groomers</option>
+      <option>Mixed</option>
+      <option>Steeps & Expert Terrain</option>
+    </select>
+
+    <label>Crowd Tolerance</label>
+    <select id="crowd">
+      <option>Low – Avoid Crowds</option>
+      <option>Medium</option>
+      <option>High – Don’t Care</option>
+    </select>
+
+    <label>Luxury Importance</label>
+    <select id="luxury">
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+    </select>
+
+    <label>Snow Reliability Importance</label>
+    <select id="snow">
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+    </select>
+
+    <label>Pass</label>
+    <select id="pass">
+      <option>Any</option>
+      <option>Epic</option>
+      <option>Ikon</option>
+      <option>Indy</option>
+      <option>Mountain Collective</option>
+    </select>
+
+    <button id="runBtn">Find My Mountains</button>
+
+  </div>
+
+  <!-- ========================= -->
+  <!-- RESULTS -->
+  <!-- ========================= -->
+
+  <div id="results"></div>
+
 </div>
 
-<script src="data.js" defer></script>
-<script src="engine.js" defer></script>
-<script src="ui.js" defer></script>
+<!-- ========================= -->
+<!-- SCRIPTS (ORDER MATTERS) -->
+<!-- ========================= -->
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="ui.js"></script>
 
 </body>
 </html>

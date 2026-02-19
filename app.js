@@ -7,9 +7,10 @@ let state = {
   driveHours: 0,
   ability: "",
   terrain: "",
-  snowPriority: "",
-  luxuryPriority: "",
-  pass: ""
+  snowPriority: "medium",
+  luxuryPriority: "medium",
+  crowdTolerance: "medium",
+  pass: "any"
 };
 
 function render(){
@@ -42,17 +43,49 @@ function render(){
 
   if(state.step === 3){
     app.innerHTML = `
-      <h2>Your Ski Profile</h2>
+      <h2>Your Ski DNA</h2>
 
+      <label>Ability</label>
       <select id="ability">
         <option>Beginner</option>
         <option>Intermediate</option>
         <option>Expert</option>
       </select>
 
+      <label>Terrain Preference</label>
       <select id="terrain">
+        <option value="balanced">Balanced</option>
         <option value="steeps">Steeps</option>
         <option value="groomers">Groomers</option>
+      </select>
+
+      <label>Snow Reliability Importance</label>
+      <select id="snowPriority">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+
+      <label>Luxury Importance</label>
+      <select id="luxuryPriority">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+
+      <label>Crowd Tolerance</label>
+      <select id="crowdTolerance">
+        <option value="low">Low (avoid crowds)</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High (doesn’t matter)</option>
+      </select>
+
+      <label>Pass Preference</label>
+      <select id="pass">
+        <option value="any">Any</option>
+        <option value="Ikon">Ikon</option>
+        <option value="Epic">Epic</option>
+        <option value="Indy">Indy</option>
       </select>
 
       <button onclick="saveProfile()">Find My Mountain</button>
@@ -80,6 +113,10 @@ function saveDrive(){
 function saveProfile(){
   state.ability = document.getElementById("ability").value;
   state.terrain = document.getElementById("terrain").value;
+  state.snowPriority = document.getElementById("snowPriority").value;
+  state.luxuryPriority = document.getElementById("luxuryPriority").value;
+  state.crowdTolerance = document.getElementById("crowdTolerance").value;
+  state.pass = document.getElementById("pass").value;
   state.step = 4;
   render();
 }
@@ -99,33 +136,56 @@ function haversine(lat1, lon1, lat2, lon2){
   return R * c;
 }
 
+function weight(level){
+  if(level === "high") return 3;
+  if(level === "medium") return 2;
+  return 1;
+}
+
 function scoreResort(r){
+
+  if(state.pass !== "any" && r.pass !== state.pass){
+    return -999; // filter out
+  }
 
   let score = 0;
 
+  // Ability + Terrain
   if(state.ability === "Expert"){
     score += r.expert * 3;
   } else {
     score += r.groomers * 3;
   }
 
-  score += r.snow * 2;
-  score += r.tier * 2;
+  if(state.terrain === "steeps") score += r.expert * 2;
+  if(state.terrain === "groomers") score += r.groomers * 2;
 
+  // Snow priority
+  score += r.snow * weight(state.snowPriority);
+
+  // Luxury
+  score += r.luxury * weight(state.luxuryPriority);
+
+  // Crowd penalty
+  if(state.crowdTolerance === "low"){
+    score -= r.crowd * 2;
+  }
+
+  // Tier boost for Fly
+  if(state.mode === "fly"){
+    score += r.tier * 3;
+  } else {
+    score += r.tier * 1.5;
+  }
+
+  // Soft distance penalty
   if(state.mode === "drive" && state.driveHours){
-    const approxUserLat = 42.36; // Boston baseline for now
-    const approxUserLon = -71.06;
-
-    const distance = haversine(
-      approxUserLat,
-      approxUserLon,
-      r.lat,
-      r.lon
-    );
-
+    const userLat = 42.36; // Boston baseline for now
+    const userLon = -71.06;
+    const distance = haversine(userLat, userLon, r.lat, r.lon);
     const maxMiles = state.driveHours * 70;
     const penalty = Math.max(0, distance - maxMiles);
-    score -= penalty / 20;
+    score -= penalty / 15;
   }
 
   return score;
@@ -136,7 +196,7 @@ function showResults(){
   let scored = resorts.map(r => ({
     ...r,
     score: scoreResort(r)
-  }));
+  })).filter(r => r.score > -500);
 
   scored.sort((a,b)=> b.score - a.score);
 
@@ -147,7 +207,7 @@ function showResults(){
     <div class="hero">
       <img src="${winner.hero}">
       <h2>🏆 ${winner.name} (${winner.state})</h2>
-      <p>Strongest alignment with your skiing style and trip priorities.</p>
+      <p>Strongest match based on your ski DNA, terrain preference, and trip priorities.</p>
     </div>
     <h3>Your Top 5</h3>
   `;
@@ -160,23 +220,11 @@ function showResults(){
     `;
   });
 
-  app.innerHTML += `
-    <button onclick="reset()">Start Over</button>
-  `;
+  app.innerHTML += `<button onclick="reset()">Start Over</button>`;
 }
 
 function reset(){
-  state = {
-    step: 1,
-    mode: null,
-    zip: "",
-    driveHours: 0,
-    ability: "",
-    terrain: "",
-    snowPriority: "",
-    luxuryPriority: "",
-    pass: ""
-  };
+  state.step = 1;
   render();
 }
 

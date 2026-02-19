@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Ski Concierge</title>
@@ -8,40 +8,10 @@
 <body>
 
 <div class="container">
-
   <h1>🎿 Ski Concierge</h1>
-  <p>We’ll match you to the right mountain.</p>
-
-  <!-- STEP 1: MODE -->
-  <div id="modeStep" class="step">
-    <h2>How are you planning to travel?</h2>
-    <button id="driveBtn">🚗 Drive Trip</button>
-    <button id="flyBtn">✈️ Fly Trip</button>
-  </div>
-
-  <!-- STEP 2: PROFILE -->
-  <div id="profileStep" class="step hidden">
-    <h2>Your Ski Profile</h2>
-
-    <label>Ability</label>
-    <select id="ability">
-      <option>Beginner</option>
-      <option>Intermediate</option>
-      <option>Expert</option>
-    </select>
-
-    <div style="margin-top:20px;">
-      <button id="backBtn">Back</button>
-      <button id="submitBtn">Find My Mountain</button>
-    </div>
-  </div>
-
-  <!-- RESULTS -->
-  <div id="results"></div>
-
+  <div id="app"></div>
 </div>
 
-<!-- IMPORTANT: Scripts must be here -->
 <script src="./resorts.js"></script>
 <script src="./app.js"></script>
 

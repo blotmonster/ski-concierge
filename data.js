@@ -1,47 +1,43 @@
-const resorts = [
+const RESORTS = [
+  // Northeast
+  { name:"Stowe", state:"VT", region:"Northeast", pass:["Epic"], drive:true, lat:44.53, lon:-72.78, vertical:8, expert:9, groomers:7, snow:7, crowd:7, luxury:8, tier:8 },
+  { name:"Killington", state:"VT", region:"Northeast", pass:["Ikon"], drive:true, lat:43.62, lon:-72.80, vertical:8, expert:8, groomers:8, snow:7, crowd:6, luxury:6, tier:7 },
+  { name:"Sugarbush", state:"VT", region:"Northeast", pass:["Ikon"], drive:true, lat:44.13, lon:-72.91, vertical:8, expert:8, groomers:6, snow:7, crowd:5, luxury:6, tier:7 },
+  { name:"Mount Snow", state:"VT", region:"Northeast", pass:["Epic"], drive:true, lat:42.96, lon:-72.92, vertical:6, expert:6, groomers:7, snow:6, crowd:7, luxury:5, tier:6 },
+  { name:"Loon", state:"NH", region:"Northeast", pass:["Ikon"], drive:true, lat:44.04, lon:-71.63, vertical:7, expert:6, groomers:8, snow:6, crowd:7, luxury:6, tier:6 },
+  { name:"Sunapee", state:"NH", region:"Northeast", pass:["Epic"], drive:true, lat:43.35, lon:-72.06, vertical:6, expert:5, groomers:8, snow:6, crowd:6, luxury:5, tier:5 },
+  { name:"Sugarloaf", state:"ME", region:"Northeast", pass:["Ikon"], drive:true, lat:45.03, lon:-70.31, vertical:9, expert:9, groomers:6, snow:8, crowd:5, luxury:5, tier:8 },
 
-/* NORTHEAST */
+  // Colorado
+  { name:"Vail", state:"CO", region:"West", pass:["Epic"], drive:false, vertical:9, expert:8, groomers:9, snow:8, crowd:9, luxury:9, tier:10 },
+  { name:"Beaver Creek", state:"CO", region:"West", pass:["Epic"], drive:false, vertical:8, expert:7, groomers:9, snow:8, crowd:7, luxury:10, tier:9 },
+  { name:"Breckenridge", state:"CO", region:"West", pass:["Epic"], drive:false, vertical:8, expert:7, groomers:8, snow:7, crowd:9, luxury:8, tier:8 },
+  { name:"Aspen Snowmass", state:"CO", region:"West", pass:["Ikon"], drive:false, vertical:9, expert:8, groomers:8, snow:8, crowd:6, luxury:10, tier:10 },
+  { name:"Steamboat", state:"CO", region:"West", pass:["Ikon"], drive:false, vertical:8, expert:7, groomers:8, snow:9, crowd:6, luxury:7, tier:8 },
 
-{ name:"Stowe", state:"VT", region:"NE", pass:"Epic", tier:8, vertical:9, expert:9, snow:8, luxury:8 },
-{ name:"Killington", state:"VT", region:"NE", pass:"Ikon", tier:8, vertical:8, expert:8, snow:7, luxury:6 },
-{ name:"Sugarbush", state:"VT", region:"NE", pass:"Ikon", tier:7, vertical:8, expert:8, snow:7, luxury:6 },
-{ name:"Mount Snow", state:"VT", region:"NE", pass:"Epic", tier:6, vertical:6, expert:6, snow:6, luxury:6 },
-{ name:"Okemo", state:"VT", region:"NE", pass:"Epic", tier:6, vertical:6, expert:5, snow:6, luxury:7 },
-{ name:"Loon", state:"NH", region:"NE", pass:"Ikon", tier:6, vertical:7, expert:6, snow:6, luxury:6 },
-{ name:"Cannon", state:"NH", region:"NE", pass:"Indy", tier:7, vertical:8, expert:8, snow:7, luxury:3 },
-{ name:"Sunapee", state:"NH", region:"NE", pass:"Epic", tier:5, vertical:6, expert:5, snow:6, luxury:5 },
-{ name:"Sugarloaf", state:"ME", region:"NE", pass:"Ikon", tier:8, vertical:9, expert:9, snow:8, luxury:5 },
-{ name:"Sunday River", state:"ME", region:"NE", pass:"Ikon", tier:7, vertical:7, expert:7, snow:7, luxury:6 },
+  // Utah
+  { name:"Alta", state:"UT", region:"West", pass:["Ikon"], drive:false, vertical:9, expert:9, groomers:4, snow:10, crowd:6, luxury:4, tier:9 },
+  { name:"Snowbird", state:"UT", region:"West", pass:["Ikon"], drive:false, vertical:10, expert:10, groomers:5, snow:10, crowd:6, luxury:5, tier:10 },
+  { name:"Park City", state:"UT", region:"West", pass:["Epic"], drive:false, vertical:8, expert:7, groomers:9, snow:8, crowd:9, luxury:9, tier:9 },
 
-/* COLORADO */
+  // Wyoming
+  { name:"Jackson Hole", state:"WY", region:"West", pass:["Ikon"], drive:false, vertical:10, expert:10, groomers:5, snow:9, crowd:7, luxury:7, tier:10 },
 
-{ name:"Vail", state:"CO", region:"CO", pass:"Epic", tier:10, vertical:9, expert:8, snow:9, luxury:9 },
-{ name:"Beaver Creek", state:"CO", region:"CO", pass:"Epic", tier:9, vertical:8, expert:7, snow:9, luxury:10 },
-{ name:"Breck", state:"CO", region:"CO", pass:"Epic", tier:9, vertical:9, expert:8, snow:8, luxury:8 },
-{ name:"Telluride", state:"CO", region:"CO", pass:"Ikon", tier:10, vertical:9, expert:9, snow:9, luxury:9 },
-{ name:"Aspen Snowmass", state:"CO", region:"CO", pass:"Ikon", tier:10, vertical:9, expert:9, snow:9, luxury:9 },
-{ name:"Arapahoe Basin", state:"CO", region:"CO", pass:"Ikon", tier:8, vertical:8, expert:9, snow:9, luxury:3 },
-{ name:"Steamboat", state:"CO", region:"CO", pass:"Ikon", tier:9, vertical:8, expert:7, snow:9, luxury:8 },
+  // Idaho
+  { name:"Sun Valley", state:"ID", region:"West", pass:["Epic"], drive:false, vertical:8, expert:8, groomers:8, snow:7, crowd:5, luxury:8, tier:8 },
 
-/* UTAH */
+  // California
+  { name:"Palisades Tahoe", state:"CA", region:"West", pass:["Ikon"], drive:false, vertical:9, expert:9, groomers:6, snow:8, crowd:7, luxury:7, tier:9 },
 
-{ name:"Alta", state:"UT", region:"UT", pass:"Ikon", tier:9, vertical:9, expert:9, snow:10, luxury:4 },
-{ name:"Snowbird", state:"UT", region:"UT", pass:"Ikon", tier:9, vertical:9, expert:9, snow:10, luxury:5 },
-{ name:"Deer Valley", state:"UT", region:"UT", pass:"Ikon", tier:9, vertical:8, expert:6, snow:9, luxury:10 },
-{ name:"Park City", state:"UT", region:"UT", pass:"Epic", tier:9, vertical:8, expert:7, snow:8, luxury:9 },
+  // Oregon
+  { name:"Mount Bachelor", state:"OR", region:"West", pass:["Ikon"], drive:false, vertical:8, expert:8, groomers:7, snow:8, crowd:5, luxury:6, tier:8 },
 
-/* WYOMING */
+  // Washington
+  { name:"Crystal Mountain", state:"WA", region:"West", pass:["Ikon"], drive:false, vertical:9, expert:8, groomers:6, snow:8, crowd:6, luxury:6, tier:8 },
 
-{ name:"Jackson Hole", state:"WY", region:"WY", pass:"Ikon", tier:10, vertical:10, expert:10, snow:10, luxury:7 },
-{ name:"Grand Targhee", state:"WY", region:"WY", pass:"Indy", tier:8, vertical:8, expert:8, snow:9, luxury:4 },
+  // Arizona
+  { name:"Arizona Snowbowl", state:"AZ", region:"West", pass:["Indy"], drive:false, vertical:6, expert:6, groomers:6, snow:5, crowd:4, luxury:4, tier:4 },
 
-/* CALIFORNIA */
-
-{ name:"Mammoth", state:"CA", region:"CA", pass:"Ikon", tier:9, vertical:9, expert:8, snow:9, luxury:8 },
-{ name:"Palisades", state:"CA", region:"CA", pass:"Ikon", tier:9, vertical:9, expert:9, snow:9, luxury:7 },
-{ name:"Heavenly", state:"CA", region:"CA", pass:"Epic", tier:8, vertical:8, expert:7, snow:8, luxury:8 },
-
-/* Add remaining states similarly (ID, OR, WA, AZ, NM) */
-/* Omitted here for message length but structure continues same */
-
+  // New Mexico
+  { name:"Taos", state:"NM", region:"West", pass:["Ikon"], drive:false, vertical:9, expert:9, groomers:5, snow:7, crowd:4, luxury:6, tier:8 }
 ];

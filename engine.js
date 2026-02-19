@@ -22,7 +22,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-
 // -----------------------------
 // Drive Time → Distance Mapping
 // -----------------------------
@@ -38,7 +37,6 @@ function getMaxDistance(driveTime) {
 
   return 9999;
 }
-
 
 // -----------------------------
 // Main Matching Engine
@@ -68,9 +66,7 @@ function calculateMatches(user) {
 
       const maxDistance = getMaxDistance(user.driveTime);
 
-      if (distance > maxDistance) {
-        return; // REMOVE resort completely
-      }
+      if (distance > maxDistance) return;
     }
 
     // -------------------------
@@ -78,61 +74,73 @@ function calculateMatches(user) {
     // -------------------------
 
     if (user.pass && user.pass.toLowerCase() !== "any") {
-      if (!resort.pass || resort.pass.toLowerCase() !== user.pass.toLowerCase()) {
-        return; // remove if wrong pass
-      }
+      if (!resort.pass.includes(user.pass)) return;
     }
-
-    // -------------------------
-    // SCORING
-    // -------------------------
 
     let score = 0;
 
-    // Ability
-    if (user.ability === "Beginner" && resort.terrain === "beginner") {
-      score += 25;
+    // -------------------------
+    // Ability Intelligence
+    // -------------------------
+
+    if (user.ability === "Beginner") {
+      score += resort.groomer * 3;
+      score += (10 - resort.expert);
     }
 
-    if (user.ability === "Intermediate" && resort.terrain === "mixed") {
-      score += 25;
+    if (user.ability === "Intermediate") {
+      score += resort.terrainMix * 2;
+      score += resort.groomer;
     }
 
-    if (
-      (user.ability === "Advanced" || user.ability === "Expert") &&
-      (resort.terrain === "advanced" || resort.terrain === "expert")
-    ) {
-      score += 30;
+    if (user.ability === "Advanced") {
+      score += resort.expert * 2;
+      score += resort.terrainMix;
     }
 
-    // Snow weighting
+    if (user.ability === "Expert") {
+      score += resort.expert * 3;
+      score += resort.vertical;
+    }
+
+    // -------------------------
+    // Snow Weighting
+    // -------------------------
+
     if (user.snow === "High") score += resort.snow * 3;
     else if (user.snow === "Medium") score += resort.snow * 2;
     else score += resort.snow;
 
-    // Crowd weighting
+    // -------------------------
+    // Crowd Preference
+    // -------------------------
+
     if (user.crowd === "Low – Avoid Crowds") {
       score += (10 - resort.crowd) * 2;
     } else if (user.crowd === "High – Don’t Care") {
       score += resort.crowd;
-    } else {
-      score += 5;
     }
 
-    // Luxury weighting
-    if (user.luxury === "High") score += resort.luxury * 2;
-    else if (user.luxury === "Medium") score += resort.luxury;
+    // -------------------------
+    // Luxury
+    // -------------------------
 
-    // Fly bonus (destination bias)
+    if (user.luxury === "High") score += resort.luxury * 3;
+    else if (user.luxury === "Medium") score += resort.luxury * 2;
+
+    // -------------------------
+    // Fly Bias (Destination Logic)
+    // -------------------------
+
     if (user.travel === "fly") {
-      score += resort.snow * 1.5;
-      score += resort.luxury;
-      score += resort.vertical || 0;
+      score += resort.tier * 3;
+      score += resort.vertical * 2;
     }
 
     results.push({
       name: resort.name,
       state: resort.state,
+      region: resort.region,
       score: score
     });
 

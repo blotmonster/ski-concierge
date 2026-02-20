@@ -1,5 +1,5 @@
 // =====================================================
-// ENGINE V2 – Clean Weighted Ski Matching
+// ENGINE V3 – Schema Aligned + Stable
 // =====================================================
 
 // -----------------------------
@@ -11,7 +11,7 @@ function toRad(value) {
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 3958.8; // miles
+  const R = 3958.8;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
 
@@ -37,7 +37,7 @@ function getZipLatLon(zip) {
 }
 
 // -----------------------------
-// Drive Time → Realistic Miles
+// Drive Hours → Miles
 // -----------------------------
 
 function getMaxMiles(maxDrive) {
@@ -68,8 +68,8 @@ function calculateMatches(user) {
   const travel = (user.travel || "").toLowerCase();
   const ability = user.ability;
   const terrainPref = user.terrain;
-  const crowd = user.crowd;
-  const luxury = user.luxury;
+  const crowdPref = user.crowd;
+  const luxuryPref = user.luxury;
   const snowImportance = user.snowImportance;
   const pass = (user.pass || "").toLowerCase();
 
@@ -85,6 +85,7 @@ function calculateMatches(user) {
     // -------------------------
 
     if (travel === "drive") {
+
       const straight = calculateDistance(
         origin.lat,
         origin.lon,
@@ -110,22 +111,32 @@ function calculateMatches(user) {
     let score = 0;
 
     // -------------------------
-    // Ability Weight
+    // Ability Scoring
     // -------------------------
 
-    if (ability === "Beginner" && resort.terrain === "beginner") score += 40;
-    if (ability === "Intermediate" && resort.terrain === "mixed") score += 40;
-    if ((ability === "Advanced" || ability === "Expert") &&
-        (resort.terrain === "advanced" || resort.terrain === "expert")) {
-      score += 50;
+    if (ability === "Beginner") {
+      score += (resort.groomers || 0) * 4;
+    }
+
+    if (ability === "Intermediate") {
+      score += ((resort.groomers || 0) * 2 + (resort.expert || 0) * 2);
+    }
+
+    if (ability === "Advanced" || ability === "Expert") {
+      score += (resort.expert || 0) * 5;
     }
 
     // -------------------------
-    // Terrain Preference Weight
+    // Terrain Preference
     // -------------------------
 
-    if (terrainPref === "Groomers" && resort.groomerFocus) score += 25;
-    if (terrainPref === "Steeps & Expert Terrain" && resort.expertFocus) score += 25;
+    if (terrainPref === "Groomers") {
+      score += (resort.groomers || 0) * 3;
+    }
+
+    if (terrainPref === "Steeps & Expert Terrain") {
+      score += (resort.expert || 0) * 4;
+    }
 
     // -------------------------
     // Snow Reliability
@@ -138,15 +149,15 @@ function calculateMatches(user) {
     // Crowd Matching
     // -------------------------
 
-    if (crowd === "Low – Avoid Crowds") {
+    if (crowdPref === "Low – Avoid Crowds") {
       score += (10 - (resort.crowd || 5)) * 3;
     }
 
-    if (crowd === "Medium") {
+    if (crowdPref === "Medium") {
       score += 5;
     }
 
-    if (crowd === "High – Don’t Care") {
+    if (crowdPref === "High – Don’t Care") {
       score += (resort.crowd || 5);
     }
 
@@ -154,8 +165,13 @@ function calculateMatches(user) {
     // Luxury
     // -------------------------
 
-    if (luxury === "High") score += (resort.luxury || 0) * 3;
-    if (luxury === "Medium") score += (resort.luxury || 0) * 1.5;
+    if (luxuryPref === "High") {
+      score += (resort.luxury || 0) * 3;
+    }
+
+    if (luxuryPref === "Medium") {
+      score += (resort.luxury || 0) * 1.5;
+    }
 
     // -------------------------
     // Fly Destination Bias
@@ -166,7 +182,7 @@ function calculateMatches(user) {
       if (resort.tier === "destination") score += 60;
       if (resort.tier === "regional") score += 20;
 
-      score += (resort.vertical || 0) / 50;
+      score += (resort.vertical || 0) / 40;
       score += (resort.snow || 0) * 2;
     }
 

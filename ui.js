@@ -1,13 +1,15 @@
 // =====================================================
-// UI – Stable Wiring (Button Safe Across Deploys)
+// UI – Fully Aligned + Stable
 // =====================================================
 
 function getUserInputs() {
-
   return {
     travel: document.getElementById("travel")?.value,
     zip: document.getElementById("zip")?.value || "02482",
-    maxDrive: document.getElementById("maxDrive")?.value,
+
+    // FIXED: correct ID
+    maxDrive: document.getElementById("driveTime")?.value,
+
     ability: document.getElementById("ability")?.value,
     terrain: document.getElementById("terrain")?.value,
     crowd: document.getElementById("crowd")?.value,
@@ -68,7 +70,7 @@ window.onload = function () {
   const btn = document.getElementById("runBtn");
 
   if (!btn) {
-    console.error("runBtn not found in DOM.");
+    console.error("runBtn not found.");
     return;
   }
 

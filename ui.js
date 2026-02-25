@@ -1,5 +1,9 @@
 // =====================================================
-// UI – Concierge Mode + Tab View
+// UI V5 – Structured + Deterministic + State Breakdown Fixed
+// =====================================================
+
+// =====================================================
+// User Inputs
 // =====================================================
 
 function getUserInputs() {
@@ -16,16 +20,16 @@ function getUserInputs() {
   };
 }
 
-// -----------------------------
+// =====================================================
 // Render Results
-// -----------------------------
+// =====================================================
 
 function renderResults(results, user) {
 
   const container = document.getElementById("results");
   if (!container) return;
 
-  if (!results.length) {
+  if (!results || !results.length) {
     container.innerHTML = "<p>No matching resorts found.</p>";
     return;
   }
@@ -38,44 +42,55 @@ function renderResults(results, user) {
     ${renderTabs(results)}
   `;
 
-  activateTab("topMatches");
+  bindTabs();
 }
 
-// -----------------------------
+// =====================================================
 // Winner Card
-// -----------------------------
+// =====================================================
 
 function renderWinnerCard(winner, explanation) {
 
   return `
-    <div style="margin-bottom:30px;">
+    <div style="margin-bottom:40px;">
       <h2>🏆 Your Best Match</h2>
-      <div style="position:relative;">
-        <img src="${winner.hero}" style="width:100%;max-height:350px;object-fit:cover;border-radius:8px;">
+
+      <div style="position:relative;margin-top:15px;">
+        <img src="${winner.hero}"
+          style="width:100%;max-height:350px;object-fit:cover;border-radius:10px;">
+
         <div style="
           position:absolute;
           bottom:0;
           left:0;
           right:0;
-          background:linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+          background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
           color:white;
           padding:20px;
-          border-radius:0 0 8px 8px;
+          border-radius:0 0 10px 10px;
         ">
-          <h3 style="margin:0;">${winner.name} (${winner.state})</h3>
-          <p style="margin:5px 0 0 0;">Match Score: ${winner.score.toFixed(1)}</p>
+          <h3 style="margin:0;font-size:22px;">
+            ${winner.name} (${winner.state})
+          </h3>
+          <p style="margin:6px 0 0 0;">
+            Match Score: ${winner.score.toFixed(1)}
+          </p>
         </div>
       </div>
-      <ul style="margin-top:15px;">
-        ${explanation.map(r => `<li>${r}</li>`).join("")}
-      </ul>
+
+      <div style="margin-top:20px;">
+        <h4>Why This Mountain Was Selected</h4>
+        <ul style="margin-top:10px;line-height:1.6;">
+          ${explanation.map(r => `<li>${r}</li>`).join("")}
+        </ul>
+      </div>
     </div>
   `;
 }
 
-// -----------------------------
+// =====================================================
 // Tabs Layout
-// -----------------------------
+// =====================================================
 
 function renderTabs(results) {
 
@@ -83,11 +98,12 @@ function renderTabs(results) {
     <div style="margin-top:20px;">
       <div style="display:flex;border-bottom:2px solid #ccc;">
         <button class="tabBtn activeTab" data-tab="topMatches"
-          style="flex:1;padding:10px;border:none;background:none;cursor:pointer;">
+          style="flex:1;padding:12px;border:none;background:none;cursor:pointer;font-weight:600;">
           Top Matches
         </button>
+
         <button class="tabBtn" data-tab="byState"
-          style="flex:1;padding:10px;border:none;background:none;cursor:pointer;">
+          style="flex:1;padding:12px;border:none;background:none;cursor:pointer;font-weight:600;">
           By State
         </button>
       </div>
@@ -103,48 +119,68 @@ function renderTabs(results) {
   `;
 }
 
-// -----------------------------
-// Top 5
-// -----------------------------
+// =====================================================
+// Top Matches
+// =====================================================
 
 function renderTopMatches(results) {
+
+  const top = results.slice(0, 5);
+
   return `
     <div style="margin-top:20px;">
-      ${results.slice(0,5).map((r,i)=>`
-        <div style="margin-bottom:12px;">
-          <strong>#${i+1} ${r.name} (${r.state})</strong>
-          — Score: ${r.score.toFixed(1)}
+      ${top.map((r, i) => `
+        <div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #eee;">
+          <strong>#${i + 1} ${r.name} (${r.state})</strong>
+          <div style="font-size:14px;color:#555;">
+            Score: ${r.score.toFixed(1)}
+          </div>
         </div>
       `).join("")}
     </div>
   `;
 }
 
-// -----------------------------
-// By State
-// -----------------------------
+// =====================================================
+// By State (Structured + Sorted)
+// =====================================================
 
 function renderByState(results) {
 
   const grouped = {};
 
+  // Group by state
   results.forEach(r => {
     if (!grouped[r.state]) grouped[r.state] = [];
     grouped[r.state].push(r);
   });
 
-  let html = "<div style='margin-top:20px;'>";
+  // Sort states by their best resort score
+  const sortedStates = Object.keys(grouped).sort((a, b) => {
+    return grouped[b][0].score - grouped[a][0].score;
+  });
 
-  Object.keys(grouped).forEach(state => {
+  let html = `<div style="margin-top:20px;">`;
 
-    const topInState = grouped[state].slice(0,3);
+  sortedStates.forEach(state => {
+
+    const resortsInState = grouped[state]
+      .sort((a, b) => b.score - a.score);
+
+    const topThree = resortsInState.slice(0, 3);
 
     html += `
-      <div style="margin-bottom:25px;">
-        <h4>${state}</h4>
-        ${topInState.map((r,i)=>`
-          <div style="margin-bottom:6px;">
-            ${i+1}. ${r.name} — ${r.score.toFixed(1)}
+      <div style="margin-bottom:30px;">
+        <h4 style="margin-bottom:10px;">
+          ${state} (${resortsInState.length})
+        </h4>
+
+        ${topThree.map((r, i) => `
+          <div style="margin-bottom:8px;">
+            ${i + 1}. ${r.name}
+            <span style="color:#666;font-size:14px;">
+              — ${r.score.toFixed(1)}
+            </span>
           </div>
         `).join("")}
       </div>
@@ -156,13 +192,14 @@ function renderByState(results) {
   return html;
 }
 
-// -----------------------------
-// Tab Activation
-// -----------------------------
+// =====================================================
+// Tab Binding
+// =====================================================
 
-function activateTab(defaultTab) {
+function bindTabs() {
 
   document.querySelectorAll(".tabBtn").forEach(btn => {
+
     btn.addEventListener("click", function () {
 
       document.querySelectorAll(".tabBtn")
@@ -179,9 +216,9 @@ function activateTab(defaultTab) {
   });
 }
 
-// -----------------------------
+// =====================================================
 // Run Match
-// -----------------------------
+// =====================================================
 
 function runMatch() {
   const user = getUserInputs();
@@ -189,13 +226,15 @@ function runMatch() {
   renderResults(results, user);
 }
 
-// -----------------------------
-// Stable Button Binding
-// -----------------------------
+// =====================================================
+// Button Binding
+// =====================================================
 
 window.onload = function () {
+
   const btn = document.getElementById("runBtn");
   if (!btn) return;
+
   btn.onclick = function (e) {
     e.preventDefault();
     runMatch();

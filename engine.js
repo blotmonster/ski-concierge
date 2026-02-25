@@ -1,5 +1,5 @@
 // =====================================================
-// ENGINE V7 – Ski Brain Experience Model
+// ENGINE V8 – Ski Brain (Balanced Concierge Tone)
 // =====================================================
 
 // =====================================================
@@ -26,7 +26,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function getZipLatLon(zip) {
-  return { lat: 42.3601, lon: -71.0589 }; // default Boston
+  return { lat: 42.3601, lon: -71.0589 }; // Default Boston
 }
 
 function getMaxMiles(maxDrive) {
@@ -41,7 +41,7 @@ function getMaxMiles(maxDrive) {
 }
 
 // =====================================================
-// MAIN SKI BRAIN MATCH ENGINE
+// MAIN MATCH ENGINE – Ski Brain Experience Model
 // =====================================================
 
 function calculateMatches(user) {
@@ -61,9 +61,7 @@ function calculateMatches(user) {
 
   resorts.forEach(resort => {
 
-    // -----------------------------
-    // Drive Filtering
-    // -----------------------------
+    // Drive filtering
     if (travel === "drive") {
       const straight = calculateDistance(
         origin.lat,
@@ -75,9 +73,7 @@ function calculateMatches(user) {
       if (driveMiles > maxMiles) return;
     }
 
-    // -----------------------------
-    // Pass Filtering
-    // -----------------------------
+    // Pass filtering
     if (pass !== "any") {
       if (!resort.pass || resort.pass.toLowerCase() !== pass) return;
     }
@@ -91,40 +87,28 @@ function calculateMatches(user) {
     const tier = resort.tier || "regional";
 
     // =====================================================
-    // EXPERIENCE MODELING
+    // Experience Modeling
     // =====================================================
 
-    // -----------------------------
-    // Density Modifier
-    // -----------------------------
-    const densityModifier =
+    const densityBoost =
       crowdPref === "Low – Avoid Crowds"
         ? (10 - crowd) * 0.6
         : 0;
 
-    // -----------------------------
-    // Groomer Experience
-    // -----------------------------
     const groomerExperience =
         (groomers * 0.35)
       + (vertical * 0.30)
       + (snow * 0.20)
       + (luxury * 0.10)
-      + (densityModifier * 0.05);
+      + (densityBoost * 0.05);
 
-    // -----------------------------
-    // Steep / Expert Experience
-    // -----------------------------
     const steepExperience =
         (expert * 0.40)
       + (vertical * 0.30)
       + (snow * 0.20)
       + (tier === "destination" ? 1 : 0) * 0.10
-      + (densityModifier * 0.05);
+      + (densityBoost * 0.05);
 
-    // -----------------------------
-    // Terrain Selection Logic
-    // -----------------------------
     let terrainScore = 0;
 
     if (terrainPref === "Groomers") {
@@ -135,9 +119,6 @@ function calculateMatches(user) {
       terrainScore = steepExperience * 10;
     }
 
-    // -----------------------------
-    // Ability Alignment
-    // -----------------------------
     let abilityScore = 0;
 
     if (ability === "Beginner") {
@@ -152,61 +133,31 @@ function calculateMatches(user) {
       abilityScore = expert * 4;
     }
 
-    // Suppress irrelevant terrain
-    if (terrainPref === "Groomers") {
-      abilityScore += groomers * 1;
-    }
+    let snowScore =
+      snowImportance === "High"
+        ? snow * 4
+        : snow * 2;
 
-    if (terrainPref === "Steeps & Expert Terrain") {
-      abilityScore += expert * 1;
-    }
-
-    // -----------------------------
-    // Snow Amplification
-    // -----------------------------
-    let snowScore = 0;
-
-    if (snowImportance === "High") {
-      snowScore = snow * 4;
-    } else {
-      snowScore = snow * 2;
-    }
-
-    // Snow matters more for steeps
     if (terrainPref === "Steeps & Expert Terrain") {
       snowScore *= 1.25;
     }
 
-    // -----------------------------
-    // Luxury Modeling (Non-Linear)
-    // -----------------------------
     let luxuryScore = 0;
 
     if (luxuryPref === "High") {
-      luxuryScore = luxury * luxury * 1.5; // exponential feel
-    }
-
-    if (luxuryPref === "Medium") {
+      luxuryScore = luxury * luxury * 1.5;
+    } else if (luxuryPref === "Medium") {
       luxuryScore = luxury * 3;
+    } else {
+      luxuryScore = luxury;
     }
 
-    if (luxuryPref === "Low") {
-      luxuryScore = luxury * 1;
-    }
-
-    // -----------------------------
-    // Fly Bias (No Filtering)
-    // -----------------------------
     let flyBias = 0;
 
     if (travel === "fly") {
-      if (tier === "destination") flyBias = 25;
+      if (tier === "destination") flyBias += 25;
       if (vertical >= 8) flyBias += 10;
     }
-
-    // =====================================================
-    // FINAL SCORE
-    // =====================================================
 
     const totalScore =
         terrainScore
@@ -233,32 +184,48 @@ function calculateMatches(user) {
 }
 
 // =====================================================
-// Winner Explanation Builder
+// Explanation Builder – Balanced Tone
 // =====================================================
 
 function buildWinnerExplanation(winner, user) {
 
   const reasons = [];
 
-  if (winner.breakdown.terrainScore > winner.breakdown.abilityScore) {
-    reasons.push("Terrain profile strongly aligns with your stated preference.");
+  if (user.terrain === "Groomers") {
+    reasons.push(
+      "Long, sustained groomed terrain supports a strong carving-focused experience."
+    );
   }
 
-  if (winner.breakdown.luxuryScore > 50) {
-    reasons.push("Luxury experience significantly elevates this resort above competitors.");
+  if (user.terrain === "Steeps & Expert Terrain") {
+    reasons.push(
+      "Challenging expert terrain and vertical scale align with your advanced skiing goals."
+    );
   }
 
-  if (winner.breakdown.snowScore > 25) {
-    reasons.push("Snow reliability enhances overall skiing quality.");
+  if (user.luxury === "High") {
+    reasons.push(
+      "Service standards, lodging quality, and overall polish align strongly with your high-luxury preference."
+    );
   }
 
-  if (winner.breakdown.flyBias > 0) {
-    reasons.push("Destination scale and vertical make this a strong fly-worthy mountain.");
+  if (user.crowd === "Low – Avoid Crowds") {
+    reasons.push(
+      "Lower skier density supports a smoother and more refined on-mountain flow."
+    );
   }
 
-  if (reasons.length < 3) {
-    reasons.push("Strong overall alignment across terrain, ability, and experience factors.");
+  if (user.travel === "fly") {
+    reasons.push(
+      "Destination-scale vertical and infrastructure justify traveling for this experience."
+    );
   }
 
-  return reasons.slice(0, 4);
+  if (reasons.length < 4) {
+    reasons.push(
+      "Strong overall alignment across terrain, comfort, and mountain scale."
+    );
+  }
+
+  return reasons.slice(0, 5);
 }

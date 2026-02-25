@@ -1,5 +1,5 @@
 // =====================================================
-// ENGINE V5 – Concierge Intelligence Layer (Stabilized)
+// ENGINE V7 – Ski Brain Experience Model
 // =====================================================
 
 // =====================================================
@@ -26,26 +26,22 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function getZipLatLon(zip) {
-  // Currently defaulting to Boston
-  // Can expand later to real ZIP lookup
-  return { lat: 42.3601, lon: -71.0589 };
+  return { lat: 42.3601, lon: -71.0589 }; // default Boston
 }
 
 function getMaxMiles(maxDrive) {
   if (!maxDrive) return 200;
-
   const v = maxDrive.toLowerCase();
   if (v.includes("2")) return 100;
   if (v.includes("3")) return 150;
   if (v.includes("4")) return 200;
   if (v.includes("5")) return 250;
   if (v.includes("6")) return 300;
-
   return 200;
 }
 
 // =====================================================
-// MAIN MATCH ENGINE
+// MAIN SKI BRAIN MATCH ENGINE
 // =====================================================
 
 function calculateMatches(user) {
@@ -75,9 +71,7 @@ function calculateMatches(user) {
         resort.lat,
         resort.lon
       );
-
       const driveMiles = straight * 1.4;
-
       if (driveMiles > maxMiles) return;
     }
 
@@ -88,95 +82,149 @@ function calculateMatches(user) {
       if (!resort.pass || resort.pass.toLowerCase() !== pass) return;
     }
 
-    let breakdown = {
-      ability: 0,
-      terrain: 0,
-      snow: 0,
-      crowd: 0,
-      luxury: 0,
-      tier: 0
-    };
+    const groomers = resort.groomers || 0;
+    const expert = resort.expert || 0;
+    const snow = resort.snow || 0;
+    const luxury = resort.luxury || 0;
+    const vertical = resort.vertical || 0;
+    const crowd = resort.crowd || 5;
+    const tier = resort.tier || "regional";
+
+    // =====================================================
+    // EXPERIENCE MODELING
+    // =====================================================
 
     // -----------------------------
-    // Ability Scoring
+    // Density Modifier
     // -----------------------------
-    if (ability === "Beginner") {
-      breakdown.ability = (resort.groomers || 0) * 4;
-    }
-
-    if (ability === "Intermediate") {
-      breakdown.ability =
-        (resort.groomers || 0) * 2 +
-        (resort.expert || 0) * 2;
-    }
-
-    if (ability === "Advanced" || ability === "Expert") {
-      breakdown.ability = (resort.expert || 0) * 5;
-    }
+    const densityModifier =
+      crowdPref === "Low – Avoid Crowds"
+        ? (10 - crowd) * 0.6
+        : 0;
 
     // -----------------------------
-    // Terrain Preference
+    // Groomer Experience
     // -----------------------------
+    const groomerExperience =
+        (groomers * 0.35)
+      + (vertical * 0.30)
+      + (snow * 0.20)
+      + (luxury * 0.10)
+      + (densityModifier * 0.05);
+
+    // -----------------------------
+    // Steep / Expert Experience
+    // -----------------------------
+    const steepExperience =
+        (expert * 0.40)
+      + (vertical * 0.30)
+      + (snow * 0.20)
+      + (tier === "destination" ? 1 : 0) * 0.10
+      + (densityModifier * 0.05);
+
+    // -----------------------------
+    // Terrain Selection Logic
+    // -----------------------------
+    let terrainScore = 0;
+
     if (terrainPref === "Groomers") {
-      breakdown.terrain = (resort.groomers || 0) * 3;
+      terrainScore = groomerExperience * 10;
     }
 
     if (terrainPref === "Steeps & Expert Terrain") {
-      breakdown.terrain = (resort.expert || 0) * 4;
+      terrainScore = steepExperience * 10;
     }
 
     // -----------------------------
-    // Snow Reliability
+    // Ability Alignment
     // -----------------------------
-    const snowWeight = snowImportance === "High" ? 4 : 2;
-    breakdown.snow = (resort.snow || 0) * snowWeight;
+    let abilityScore = 0;
 
-    // -----------------------------
-    // Crowd Alignment
-    // -----------------------------
-    if (crowdPref === "Low – Avoid Crowds") {
-      breakdown.crowd = (10 - (resort.crowd || 5)) * 3;
+    if (ability === "Beginner") {
+      abilityScore = groomers * 3;
     }
 
-    if (crowdPref === "Medium") {
-      breakdown.crowd = 5;
+    if (ability === "Intermediate") {
+      abilityScore = (groomers * 2) + (expert * 1);
     }
 
-    if (crowdPref === "High – Don’t Care") {
-      breakdown.crowd = resort.crowd || 0;
+    if (ability === "Advanced" || ability === "Expert") {
+      abilityScore = expert * 4;
+    }
+
+    // Suppress irrelevant terrain
+    if (terrainPref === "Groomers") {
+      abilityScore += groomers * 1;
+    }
+
+    if (terrainPref === "Steeps & Expert Terrain") {
+      abilityScore += expert * 1;
     }
 
     // -----------------------------
-    // Luxury Preference
+    // Snow Amplification
     // -----------------------------
+    let snowScore = 0;
+
+    if (snowImportance === "High") {
+      snowScore = snow * 4;
+    } else {
+      snowScore = snow * 2;
+    }
+
+    // Snow matters more for steeps
+    if (terrainPref === "Steeps & Expert Terrain") {
+      snowScore *= 1.25;
+    }
+
+    // -----------------------------
+    // Luxury Modeling (Non-Linear)
+    // -----------------------------
+    let luxuryScore = 0;
+
     if (luxuryPref === "High") {
-      breakdown.luxury = (resort.luxury || 0) * 3;
+      luxuryScore = luxury * luxury * 1.5; // exponential feel
     }
 
     if (luxuryPref === "Medium") {
-      breakdown.luxury = (resort.luxury || 0) * 1.5;
+      luxuryScore = luxury * 3;
+    }
+
+    if (luxuryPref === "Low") {
+      luxuryScore = luxury * 1;
     }
 
     // -----------------------------
-    // Fly Tier Bias
+    // Fly Bias (No Filtering)
     // -----------------------------
+    let flyBias = 0;
+
     if (travel === "fly") {
-      if (resort.tier === "destination") breakdown.tier = 60;
-      if (resort.tier === "regional") breakdown.tier = 20;
+      if (tier === "destination") flyBias = 25;
+      if (vertical >= 8) flyBias += 10;
     }
 
-    const total =
-      breakdown.ability +
-      breakdown.terrain +
-      breakdown.snow +
-      breakdown.crowd +
-      breakdown.luxury +
-      breakdown.tier;
+    // =====================================================
+    // FINAL SCORE
+    // =====================================================
+
+    const totalScore =
+        terrainScore
+      + abilityScore
+      + snowScore
+      + luxuryScore
+      + flyBias;
 
     results.push({
       ...resort,
-      score: total,
-      breakdown
+      score: totalScore,
+      breakdown: {
+        terrainScore,
+        abilityScore,
+        snowScore,
+        luxuryScore,
+        flyBias
+      }
     });
 
   });
@@ -185,66 +233,32 @@ function calculateMatches(user) {
 }
 
 // =====================================================
-// Winner Explanation Builder (Deterministic)
+// Winner Explanation Builder
 // =====================================================
 
 function buildWinnerExplanation(winner, user) {
 
-  const explanationMap = {
-    ability: () => {
-      if (user.ability === "Beginner")
-        return "Strong groomed terrain supports a beginner-friendly experience.";
-      if (user.ability === "Intermediate")
-        return "Balanced terrain mix aligns well with your intermediate level.";
-      if (user.ability === "Advanced" || user.ability === "Expert")
-        return "Extensive expert terrain matches your advanced ability.";
-      return "Terrain profile aligns with your skiing level.";
-    },
+  const reasons = [];
 
-    terrain: () => {
-      if (user.terrain === "Groomers")
-        return "High-quality groomers support your terrain preference.";
-      if (user.terrain === "Steeps & Expert Terrain")
-        return "Strong steeps and expert zones match your terrain goals.";
-      return "Terrain composition aligns with your skiing style.";
-    },
-
-    snow: () =>
-      "Reliable snowfall strengthens overall conditions for your trip.",
-
-    crowd: () => {
-      if (user.crowd === "Low – Avoid Crowds")
-        return "Lower crowd density enhances your mountain experience.";
-      if (user.crowd === "High – Don’t Care")
-        return "Crowd levels are not a limiting factor for your visit.";
-      return "Crowd profile aligns with your expectations.";
-    },
-
-    luxury: () =>
-      "Resort amenities and lodging match your comfort preferences.",
-
-    tier: () =>
-      "Destination-tier status elevates the overall mountain experience."
-  };
-
-  const ranked = Object.entries(winner.breakdown)
-    .sort((a, b) => b[1] - a[1])
-    .filter(entry => entry[1] > 0);
-
-  let reasons = [];
-
-  ranked.slice(0, 4).forEach(entry => {
-    const key = entry[0];
-    if (explanationMap[key]) {
-      reasons.push(explanationMap[key]());
-    }
-  });
-
-  if (reasons.length < 3) {
-    reasons.push(
-      "Strong overall score compared to regional alternatives."
-    );
+  if (winner.breakdown.terrainScore > winner.breakdown.abilityScore) {
+    reasons.push("Terrain profile strongly aligns with your stated preference.");
   }
 
-  return reasons;
+  if (winner.breakdown.luxuryScore > 50) {
+    reasons.push("Luxury experience significantly elevates this resort above competitors.");
+  }
+
+  if (winner.breakdown.snowScore > 25) {
+    reasons.push("Snow reliability enhances overall skiing quality.");
+  }
+
+  if (winner.breakdown.flyBias > 0) {
+    reasons.push("Destination scale and vertical make this a strong fly-worthy mountain.");
+  }
+
+  if (reasons.length < 3) {
+    reasons.push("Strong overall alignment across terrain, ability, and experience factors.");
+  }
+
+  return reasons.slice(0, 4);
 }

@@ -1,94 +1,54 @@
 // =====================================================
-// UI V8 – Vertical Concierge Layout
+// UI V9 – Fully Aligned With New HTML Layout
 // =====================================================
 
 function getUserInputs() {
   return {
-    travel: document.getElementById("travel")?.value,
-    zip: document.getElementById("zip")?.value || "02482",
+    travel: document.getElementById("travelType")?.value,
+    zip: document.getElementById("zipCode")?.value || "02482",
     maxDrive: document.getElementById("driveTime")?.value,
     ability: document.getElementById("ability")?.value,
-    terrain: document.getElementById("terrain")?.value,
-    crowd: document.getElementById("crowd")?.value,
-    luxury: document.getElementById("luxury")?.value,
-    snowImportance: document.getElementById("snow")?.value,
-    pass: document.getElementById("pass")?.value
+    terrain: document.getElementById("terrainPreference")?.value,
+    crowd: document.getElementById("crowdTolerance")?.value,
+    luxury: document.getElementById("luxuryImportance")?.value,
+    snowImportance: document.getElementById("snowImportance")?.value,
+    pass: document.getElementById("passPreference")?.value
   };
 }
 
 function renderResults(results, user) {
 
-  const container = document.getElementById("results");
-  if (!container || !results.length) {
-    container.innerHTML = "<p>No matching resorts found.</p>";
-    return;
-  }
+  if (!results || results.length === 0) return;
 
   const winner = results[0];
   const explanation = buildWinnerExplanation(winner, user);
 
-  container.innerHTML = `
-    ${renderWinnerCard(winner, explanation)}
-    ${renderTopOverall(results)}
-    ${renderByState(results)}
-  `;
-}
+  // ===== Populate Hero =====
+  document.getElementById("bestHeroImage").src = winner.hero;
+  document.getElementById("bestMountainName").textContent =
+    `${winner.name} (${winner.state})`;
 
-function renderWinnerCard(winner, explanation) {
+  document.getElementById("bestMatchScore").textContent =
+    `Match Score: ${winner.score.toFixed(1)}`;
 
-  return `
-    <div style="margin-bottom:40px;">
-      <h2>🏆 Best Overall Match</h2>
+  document.getElementById("bestReasons").innerHTML =
+    explanation.map(r => `<li>${r}</li>`).join("");
 
-      <div style="position:relative;margin-top:15px;">
-        <img src="${winner.hero}"
-          style="width:100%;max-height:350px;object-fit:cover;border-radius:10px;">
+  // ===== Top Overall List =====
+  const topList = document.getElementById("topMatchesList");
+  topList.innerHTML = "";
 
-        <div style="
-          position:absolute;
-          bottom:0;
-          left:0;
-          right:0;
-          background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-          color:white;
-          padding:20px;
-          border-radius:0 0 10px 10px;
-        ">
-          <h3 style="margin:0;">${winner.name} (${winner.state})</h3>
-          <p style="margin:6px 0 0 0;">
-            Match Score: ${winner.score.toFixed(1)}
-          </p>
-        </div>
-      </div>
+  results.slice(0,5).forEach((r,i)=>{
+    const li = document.createElement("li");
+    li.innerHTML = `<strong>#${i+1} ${r.name} (${r.state})</strong> — ${r.score.toFixed(1)}`;
+    topList.appendChild(li);
+  });
 
-      <ul style="margin-top:15px;line-height:1.6;">
-        ${explanation.map(r => `<li>${r}</li>`).join("")}
-      </ul>
-    </div>
-  `;
-}
-
-function renderTopOverall(results) {
-
-  const top = results.slice(0,5);
-
-  return `
-    <div style="margin-bottom:40px;">
-      <h3>🔥 Top Overall Matches</h3>
-      ${top.map((r,i)=>`
-        <div style="margin-bottom:10px;">
-          <strong>#${i+1} ${r.name} (${r.state})</strong>
-          — ${r.score.toFixed(1)}
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function renderByState(results) {
+  // ===== Results By State =====
+  const stateContainer = document.getElementById("resultsByState");
+  stateContainer.innerHTML = "";
 
   const grouped = {};
-
   results.forEach(r => {
     if (!grouped[r.state]) grouped[r.state] = [];
     grouped[r.state].push(r);
@@ -97,32 +57,26 @@ function renderByState(results) {
   const states = Object.keys(grouped)
     .sort((a,b)=> grouped[b][0].score - grouped[a][0].score);
 
-  let html = `
-    <div style="margin-bottom:40px;">
-      <h3>🗺 Top Results by State</h3>
-  `;
-
   states.forEach(state => {
 
-    const sorted = grouped[state]
+    const wrapper = document.createElement("div");
+    wrapper.className = "state-group";
+
+    const title = document.createElement("h4");
+    title.textContent = state;
+    wrapper.appendChild(title);
+
+    grouped[state]
       .sort((a,b)=> b.score - a.score)
-      .slice(0,3);
+      .slice(0,3)
+      .forEach((r,i)=>{
+        const div = document.createElement("div");
+        div.textContent = `${i+1}. ${r.name} — ${r.score.toFixed(1)}`;
+        wrapper.appendChild(div);
+      });
 
-    html += `
-      <div style="margin-top:20px;">
-        <h4>${state}</h4>
-        ${sorted.map((r,i)=>`
-          <div style="margin-bottom:6px;">
-            ${i+1}. ${r.name} — ${r.score.toFixed(1)}
-          </div>
-        `).join("")}
-      </div>
-    `;
+    stateContainer.appendChild(wrapper);
   });
-
-  html += `</div>`;
-
-  return html;
 }
 
 function runMatch() {
@@ -132,10 +86,11 @@ function runMatch() {
 }
 
 window.onload = function () {
-  const btn = document.getElementById("runBtn");
+  const btn = document.getElementById("findButton");
   if (!btn) return;
-  btn.onclick = function (e) {
+
+  btn.addEventListener("click", function (e) {
     e.preventDefault();
     runMatch();
-  };
+  });
 };
